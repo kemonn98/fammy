@@ -130,7 +130,6 @@ export function AgendaPageClient() {
         key={format(selectedDate, "yyyy-MM-dd")}
         variant="inline"
         userEmail={userEmail}
-        partnerEmail={partnerEmail}
         defaultType="event"
         defaultDate={format(selectedDate, "yyyy-MM-dd")}
         onSaved={() => undefined}

@@ -8,11 +8,7 @@ import { VisibilityToggle } from "@/components/visibility-toggle";
 import { TaskList } from "@/components/task-list";
 import { useTasks } from "@/hooks/use-tasks";
 
-interface AllPageClientProps {
-  partnerEmail: string | null;
-}
-
-export function AllPageClient({ partnerEmail }: AllPageClientProps) {
+export function AllPageClient() {
   const { data: session } = useSession();
   const tasks = useTasks();
   const [filter, setFilter] = useState<VisibilityFilter>("all");
@@ -30,7 +26,6 @@ export function AllPageClient({ partnerEmail }: AllPageClientProps) {
         tasks={tasks}
         filter={filter}
         userEmail={userEmail}
-        partnerEmail={partnerEmail}
         mode="all"
         onComplete={handleComplete}
       />

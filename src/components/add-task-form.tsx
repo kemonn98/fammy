@@ -28,7 +28,7 @@ import { TimeSelect } from "@/components/time-select";
 
 interface AddTaskFormProps {
   userEmail: string;
-  variant?: "inline" | "page";
+  variant?: "inline" | "page" | "bar";
   onSaved?: () => void;
   defaultType?: TaskType;
   defaultDate?: string;
@@ -51,6 +51,7 @@ export function AddTaskForm({
 }: AddTaskFormProps) {
   const router = useRouter();
   const isInline = variant === "inline";
+  const compact = variant === "inline" || variant === "bar";
   const isEvent = defaultType === "event";
   const type = defaultType;
 
@@ -122,10 +123,10 @@ export function AddTaskForm({
   }
 
   const placeholder = isEvent
-    ? isInline
+    ? compact
       ? "Tambah agenda..."
       : "Apa acaranya?"
-    : isInline
+    : compact
       ? "Tambah tugas..."
       : "Apa yang perlu dilakukan?";
 
@@ -146,9 +147,9 @@ export function AddTaskForm({
             placeholder={placeholder}
             className={cn(
               "h-12 border-0 bg-transparent px-0 font-medium shadow-none focus-visible:ring-0",
-              isInline ? "text-lg" : "text-2xl",
+              compact ? "text-lg" : "text-2xl",
             )}
-            autoFocus={!isInline}
+            autoFocus={!compact}
           />
 
           <div className="flex items-center justify-between gap-2">
@@ -165,7 +166,7 @@ export function AddTaskForm({
 
             <Button type="submit" disabled={!title.trim() || saving}>
               <Plus />
-              {saving ? "Menyimpan..." : isInline ? "Tambah" : "Simpan"}
+              {saving ? "Menyimpan..." : compact ? "Tambah" : "Simpan"}
             </Button>
           </div>
 
@@ -297,9 +298,9 @@ export function AddTaskForm({
             placeholder={placeholder}
             className={cn(
               "min-w-0 flex-1 border-0 bg-transparent px-0 font-medium shadow-none focus-visible:ring-0",
-              isInline ? "h-11 text-lg" : "h-12 text-2xl",
+              compact ? "h-11 text-lg" : "h-12 text-2xl",
             )}
-            autoFocus={!isInline}
+            autoFocus={!compact}
           />
           <Button
             type="submit"
@@ -307,7 +308,7 @@ export function AddTaskForm({
             className="shrink-0"
           >
             <Plus />
-            {saving ? "..." : isInline ? "Tambah" : "Simpan"}
+            {saving ? "..." : compact ? "Tambah" : "Simpan"}
           </Button>
         </div>
       )}

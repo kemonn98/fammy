@@ -6,7 +6,6 @@ import type { Task, VisibilityFilter } from "@/lib/types";
 import { completeTaskLocal } from "@/lib/sync/engine";
 import { VisibilityToggle } from "@/components/visibility-toggle";
 import { TaskList } from "@/components/task-list";
-import { AddTaskForm } from "@/components/add-task-form";
 import { IosInstallPrompt } from "@/components/ios-install-prompt";
 import { PushPermissionBanner } from "@/components/push-permission-banner";
 import { useTasks } from "@/hooks/use-tasks";
@@ -34,12 +33,6 @@ export function TodayPageClient() {
           onComplete={handleComplete}
         />
       </div>
-
-      <AddTaskForm
-        variant="inline"
-        userEmail={userEmail}
-        onSaved={() => undefined}
-      />
 
       <div className="space-y-3 pt-2">
         <IosInstallPrompt />

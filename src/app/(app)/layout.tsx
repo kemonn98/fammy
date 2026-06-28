@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { auth, signOut } from "@/lib/auth";
 import { BottomNav } from "@/components/bottom-nav";
+import { QuickAddBar } from "@/components/quick-add-bar";
 import { SyncProvider } from "@/components/sync-provider";
 import { Button } from "@/components/ui/button";
 
@@ -14,7 +15,7 @@ export default async function AppLayout({
 
   return (
     <SyncProvider>
-      <div className="mx-auto min-h-screen max-w-lg px-4 pb-24 pt-6">
+      <div className="mx-auto min-h-screen max-w-lg px-4 pb-40 pt-6">
         <div className="mb-4 flex items-center justify-between">
           <span className="text-sm font-semibold tracking-tight text-primary">
             Fammy
@@ -37,7 +38,10 @@ export default async function AppLayout({
         </div>
         {children}
       </div>
-      <BottomNav />
+      <div className="fixed inset-x-0 bottom-0 z-50">
+        <QuickAddBar />
+        <BottomNav />
+      </div>
     </SyncProvider>
   );
 }
