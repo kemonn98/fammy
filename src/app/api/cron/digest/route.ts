@@ -1,4 +1,4 @@
-import { addDays, format, isToday, parseISO } from "date-fns";
+import { addDays, format, parseISO } from "date-fns";
 import { NextRequest, NextResponse } from "next/server";
 import { unauthorizedCron, verifyCronSecret } from "@/lib/cron-auth";
 import {
@@ -8,7 +8,7 @@ import {
 } from "@/lib/sheets/client";
 import { isActiveTask } from "@/lib/tasks/filters";
 import { sendPushToAll } from "@/lib/push/send";
-import { parseAllowedEmails } from "@/lib/utils";
+import { nowPartsInAppTz, parseAllowedEmails, todayInAppTz } from "@/lib/utils";
 
 export async function GET(request: NextRequest) {
   if (!verifyCronSecret(request)) return unauthorizedCron();
@@ -17,21 +17,21 @@ export async function GET(request: NextRequest) {
     const settings = await getSettings();
     const digestHour = Number(settings.digestHour ?? "7");
     const digestMinute = Number(settings.digestMinute ?? "0");
-    const now = new Date();
+    const { hour, minute } = nowPartsInAppTz();
 
-    if (now.getHours() !== digestHour || now.getMinutes() !== digestMinute) {
+    if (hour !== digestHour || minute !== digestMinute) {
       return NextResponse.json({ skipped: true, reason: "not digest time" });
     }
 
     const tasks = await getAllTasks();
-    const todayStr = format(now, "yyyy-MM-dd");
-    const threeDaysLater = format(addDays(now, 3), "yyyy-MM-dd");
+    const todayStr = todayInAppTz();
+    const threeDaysLater = format(addDays(parseISO(todayStr), 3), "yyyy-MM-dd");
 
     const todosToday = tasks.filter(
       (t) =>
         isActiveTask(t) &&
         t.type === "todo" &&
-        (!t.dueDate || t.dueDate === todayStr || isToday(parseISO(t.dueDate))),
+        (!t.dueDate || t.dueDate === todayStr),
     );
 
     const upcomingEvents = tasks.filter(

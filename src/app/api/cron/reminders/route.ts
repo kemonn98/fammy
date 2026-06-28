@@ -1,4 +1,4 @@
-import { addMinutes, format, parseISO } from "date-fns";
+import { parseISO } from "date-fns";
 import { NextRequest, NextResponse } from "next/server";
 import { unauthorizedCron, verifyCronSecret } from "@/lib/cron-auth";
 import {
@@ -8,14 +8,14 @@ import {
 } from "@/lib/sheets/client";
 import { isActiveTask } from "@/lib/tasks/filters";
 import { sendPushToAll } from "@/lib/push/send";
-import { nowIso } from "@/lib/utils";
+import { nowIso, todayInAppTz, zonedDateTimeToUtcMs } from "@/lib/utils";
 
 export async function GET(request: NextRequest) {
   if (!verifyCronSecret(request)) return unauthorizedCron();
 
   try {
-    const now = new Date();
-    const todayStr = format(now, "yyyy-MM-dd");
+    const nowMs = Date.now();
+    const todayStr = todayInAppTz();
     const tasks = await getAllTasks();
     const subscriptions = await getAllPushSubscriptions();
     const toNotify: typeof tasks = [];
@@ -24,17 +24,13 @@ export async function GET(request: NextRequest) {
       if (!isActiveTask(task) || task.type !== "event") continue;
       if (!task.dueDate || task.dueDate !== todayStr || !task.dueTime) continue;
 
-      const [hours, minutes] = task.dueTime.split(":").map(Number);
-      const eventTime = new Date(now);
-      eventTime.setHours(hours, minutes, 0, 0);
-
-      const remindAt = addMinutes(eventTime, -(task.remindBefore ?? 0));
-      const diffMs = Math.abs(now.getTime() - remindAt.getTime());
-      if (diffMs > 60 * 1000) continue;
+      const eventMs = zonedDateTimeToUtcMs(task.dueDate, task.dueTime);
+      const remindAtMs = eventMs - (task.remindBefore ?? 0) * 60 * 1000;
+      if (Math.abs(nowMs - remindAtMs) > 60 * 1000) continue;
 
       if (task.lastNotifiedAt) {
         const last = parseISO(task.lastNotifiedAt);
-        if (Math.abs(now.getTime() - last.getTime()) < 5 * 60 * 1000) continue;
+        if (Math.abs(nowMs - last.getTime()) < 5 * 60 * 1000) continue;
       }
 
       toNotify.push(task);

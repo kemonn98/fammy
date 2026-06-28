@@ -8,7 +8,11 @@ import {
   startOfDay,
 } from "date-fns";
 import type { Repeat, Task } from "@/lib/types";
-import { createId, nowIso } from "@/lib/utils";
+import { createId, nowIso, todayInAppTz } from "@/lib/utils";
+
+function startOfTodayInAppTz(): Date {
+  return startOfDay(parseISO(todayInAppTz()));
+}
 
 export function getNextDueDate(
   currentDueDate: string | null,
@@ -17,7 +21,7 @@ export function getNextDueDate(
 ): string | null {
   const base = currentDueDate
     ? startOfDay(parseISO(currentDueDate))
-    : startOfDay(new Date());
+    : startOfTodayInAppTz();
 
   let next: Date;
   switch (repeat) {
@@ -47,7 +51,7 @@ export function shouldGenerateRecurringToday(task: Task): boolean {
 
   if (task.repeatUntil) {
     try {
-      if (isBefore(parseISO(task.repeatUntil), startOfDay(new Date()))) {
+      if (isBefore(parseISO(task.repeatUntil), startOfTodayInAppTz())) {
         return false;
       }
     } catch {
@@ -59,7 +63,7 @@ export function shouldGenerateRecurringToday(task: Task): boolean {
 
   try {
     const due = startOfDay(parseISO(task.dueDate));
-    const today = startOfDay(new Date());
+    const today = startOfTodayInAppTz();
     return due.getTime() <= today.getTime();
   } catch {
     return false;
@@ -67,7 +71,7 @@ export function shouldGenerateRecurringToday(task: Task): boolean {
 }
 
 export function createRecurringInstance(parent: Task): Task {
-  const today = format(new Date(), "yyyy-MM-dd");
+  const today = todayInAppTz();
   return {
     ...parent,
     id: createId(),
@@ -84,7 +88,7 @@ export function createRecurringInstance(parent: Task): Task {
 
 export function advanceRecurringParent(parent: Task): Task {
   const nextDate = getNextDueDate(
-    parent.dueDate ?? format(new Date(), "yyyy-MM-dd"),
+    parent.dueDate ?? todayInAppTz(),
     parent.repeat,
     parent.repeatInterval,
   );
@@ -112,10 +116,11 @@ export function processRecurringTasks(tasks: Task[]): Task[] {
   for (const parent of parents) {
     if (!shouldGenerateRecurringToday(parent)) continue;
 
+    const todayStr = todayInAppTz();
     const hasInstanceToday = tasks.some(
       (t) =>
         t.recurrenceParentId === parent.id &&
-        t.dueDate === format(new Date(), "yyyy-MM-dd") &&
+        t.dueDate === todayStr &&
         !t.deleted,
     );
 
