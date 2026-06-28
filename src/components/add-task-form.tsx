@@ -81,13 +81,14 @@ export function AddTaskForm({
     if (!title.trim()) return;
 
     setSaving(true);
+    const resolvedVisibility: Visibility = isEvent ? eventVisibility : visibility;
     const task: Task = {
       id: createId(),
       title: title.trim(),
       note: isEvent ? note : "",
       type,
-      visibility: isEvent ? eventVisibility : visibility,
-      assignee: "both",
+      visibility: resolvedVisibility,
+      assignee: resolvedVisibility === "shared" ? "both" : userEmail,
       createdBy: userEmail,
       dueDate: isEvent ? dueDate || null : null,
       dueTime: isEvent ? dueTime || null : null,

@@ -8,10 +8,7 @@ export function sortTasksOldestFirst(tasks: Task[]): Task[] {
 export function canViewTask(task: Task, userEmail: string): boolean {
   if (task.deleted) return false;
   if (task.visibility === "shared") return true;
-  if (task.createdBy === userEmail) return true;
-  if (task.assignee === "both") return true;
-  if (task.assignee === userEmail) return true;
-  return false;
+  return task.createdBy === userEmail;
 }
 
 export function matchesVisibilityFilter(
