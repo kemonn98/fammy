@@ -18,7 +18,11 @@ export function VisibilityToggle({ value, onChange }: VisibilityToggleProps) {
     <Tabs value={value} onValueChange={(v) => onChange(v as VisibilityFilter)}>
       <TabsList className="w-full">
         {options.map((opt) => (
-          <TabsTrigger key={opt.value} value={opt.value}>
+          <TabsTrigger
+            key={opt.value}
+            value={opt.value}
+            className="border-0 data-active:bg-white data-active:shadow-none"
+          >
             {opt.label}
           </TabsTrigger>
         ))}

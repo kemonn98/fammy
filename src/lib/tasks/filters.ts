@@ -18,6 +18,7 @@ export function matchesVisibilityFilter(
   task: Task,
   filter: VisibilityFilter,
 ): boolean {
+  if (filter === "all") return true;
   if (filter === "shared") return task.visibility === "shared";
   if (filter === "mine") return task.visibility === "private";
   return true;
