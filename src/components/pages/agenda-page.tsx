@@ -14,11 +14,7 @@ import { AddTaskForm } from "@/components/add-task-form";
 import { AgendaCalendar } from "@/components/agenda-calendar";
 import { Button } from "@/components/ui/button";
 
-interface AgendaPageClientProps {
-  partnerEmail: string | null;
-}
-
-export function AgendaPageClient({ partnerEmail }: AgendaPageClientProps) {
+export function AgendaPageClient() {
   const { data: session } = useSession();
   const tasks = useTasks();
   const userEmail = session?.user?.email ?? "";
@@ -121,7 +117,6 @@ export function AgendaPageClient({ partnerEmail }: AgendaPageClientProps) {
                 key={task.id}
                 task={task}
                 userEmail={userEmail}
-                partnerEmail={partnerEmail}
                 onComplete={
                   task.status === "active" ? handleComplete : undefined
                 }

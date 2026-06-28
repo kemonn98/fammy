@@ -23,8 +23,10 @@ export function SyncProvider({ children }: { children: React.ReactNode }) {
     window.addEventListener("online", onOnline);
 
     const interval = setInterval(() => {
-      if (navigator.onLine) void syncAll();
-    }, 5 * 60 * 1000);
+      if (!navigator.onLine) return;
+      if (document.visibilityState !== "visible") return;
+      void syncAll();
+    }, 10 * 1000);
 
     const onFocus = () => {
       if (navigator.onLine) void pullFromServer();

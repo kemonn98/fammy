@@ -92,10 +92,27 @@ export function groupTasksByDate(tasks: Task[]): Record<string, Task[]> {
 }
 
 export const CATEGORIES = [
+  // Tugas harian
   "belanja",
   "rumah",
-  "acara",
+  "kebersihan",
+  "masak",
+  "cucian",
+  "finansial",
+  "kerja",
+  "anak",
   "hewan",
+  // Agenda & acara
+  "acara",
+  "pertemuan",
   "kesehatan",
+  "olahraga",
+  "keluarga",
+  "ulang tahun",
+  "liburan",
+  "pesta",
+  "pendidikan",
+  "kerohanian",
+  "transport",
   "lainnya",
 ] as const;

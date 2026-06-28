@@ -14,7 +14,6 @@ interface TaskListProps {
   tasks: Task[];
   filter: VisibilityFilter;
   userEmail: string;
-  partnerEmail?: string | null;
   mode: "today" | "all";
   onComplete?: (task: Task) => void;
 }
@@ -23,7 +22,6 @@ export function TaskList({
   tasks,
   filter,
   userEmail,
-  partnerEmail = null,
   mode,
   onComplete,
 }: TaskListProps) {
@@ -54,7 +52,6 @@ export function TaskList({
             key={task.id}
             task={task}
             userEmail={userEmail}
-            partnerEmail={partnerEmail}
             onComplete={onComplete}
           />
         ))}
@@ -79,7 +76,6 @@ export function TaskList({
                   key={task.id}
                   task={task}
                   userEmail={userEmail}
-                  partnerEmail={partnerEmail}
                   onComplete={
                     task.status === "active" ? onComplete : undefined
                   }

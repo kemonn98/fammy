@@ -11,11 +11,7 @@ import { IosInstallPrompt } from "@/components/ios-install-prompt";
 import { PushPermissionBanner } from "@/components/push-permission-banner";
 import { useTasks } from "@/hooks/use-tasks";
 
-interface TodayPageClientProps {
-  partnerEmail: string | null;
-}
-
-export function TodayPageClient({ partnerEmail }: TodayPageClientProps) {
+export function TodayPageClient() {
   const { data: session } = useSession();
   const tasks = useTasks();
   const [filter, setFilter] = useState<VisibilityFilter>("all");
@@ -34,7 +30,6 @@ export function TodayPageClient({ partnerEmail }: TodayPageClientProps) {
           tasks={tasks}
           filter={filter}
           userEmail={userEmail}
-          partnerEmail={partnerEmail}
           mode="today"
           onComplete={handleComplete}
         />
@@ -43,7 +38,6 @@ export function TodayPageClient({ partnerEmail }: TodayPageClientProps) {
       <AddTaskForm
         variant="inline"
         userEmail={userEmail}
-        partnerEmail={partnerEmail}
         onSaved={() => undefined}
       />
 

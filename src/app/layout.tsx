@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   applicationName: "Fammy",
   appleWebApp: {
     capable: true,
-    statusBarStyle: "default",
+    statusBarStyle: "black-translucent",
     title: "Fammy",
   },
   formatDetection: {
@@ -27,7 +27,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#5b8a72",
+  themeColor: "#0a0a0a",
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
@@ -40,7 +40,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="id" className={cn("h-full", inter.variable, "font-sans", geist.variable)}>
+    <html lang="id" className={cn("dark h-full", inter.variable, "font-sans", geist.variable)}>
       <body
         suppressHydrationWarning
         className="min-h-full bg-background font-sans text-foreground antialiased"

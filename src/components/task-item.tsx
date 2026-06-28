@@ -20,21 +20,13 @@ import { EditTaskDialog } from "@/components/edit-task-dialog";
 interface TaskItemProps {
   task: Task;
   userEmail: string;
-  partnerEmail?: string | null;
   onComplete?: (task: Task) => void;
   showDate?: boolean;
 }
 
-const priorityDot: Record<Task["priority"], string> = {
-  low: "bg-muted-foreground/40",
-  medium: "bg-primary",
-  high: "bg-destructive",
-};
-
 export function TaskItem({
   task,
   userEmail,
-  partnerEmail = null,
   onComplete,
   showDate = false,
 }: TaskItemProps) {
@@ -77,22 +69,14 @@ export function TaskItem({
           />
 
           <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-2">
-              <span
-                className={cn(
-                  "h-2 w-2 shrink-0 rounded-full",
-                  priorityDot[task.priority],
-                )}
-              />
-              <p
-                className={cn(
-                  "truncate font-medium text-foreground",
-                  done && "text-muted-foreground line-through",
-                )}
-              >
-                {task.title}
-              </p>
-            </div>
+            <p
+              className={cn(
+                "truncate font-medium text-foreground",
+                done && "text-muted-foreground line-through",
+              )}
+            >
+              {task.title}
+            </p>
 
             <div className="mt-1.5 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
               {task.visibility === "private" ? (
@@ -152,8 +136,6 @@ export function TaskItem({
         task={task}
         open={editOpen}
         onOpenChange={setEditOpen}
-        userEmail={userEmail}
-        partnerEmail={partnerEmail}
       />
     </>
   );

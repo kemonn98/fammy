@@ -21,6 +21,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { TimeSelect } from "@/components/time-select";
 import {
   Dialog,
   DialogContent,
@@ -29,12 +30,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
-
-const PRIORITY_LABELS: Record<Task["priority"], string> = {
-  low: "Prioritas rendah",
-  medium: "Prioritas sedang",
-  high: "Prioritas tinggi",
-};
 
 const REPEAT_LABELS: Record<Task["repeat"], string> = {
   none: "Tidak berulang",
@@ -48,16 +43,12 @@ interface EditTaskDialogProps {
   task: Task | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  userEmail: string;
-  partnerEmail: string | null;
 }
 
 export function EditTaskDialog({
   task,
   open,
   onOpenChange,
-  userEmail,
-  partnerEmail,
 }: EditTaskDialogProps) {
   const [title, setTitle] = useState("");
   const [visibility, setVisibility] = useState<Task["visibility"]>("shared");
@@ -67,8 +58,6 @@ export function EditTaskDialog({
   const [dateOpen, setDateOpen] = useState(false);
   const [dueTime, setDueTime] = useState("");
   const [repeat, setRepeat] = useState<Task["repeat"]>("none");
-  const [priority, setPriority] = useState<Task["priority"]>("medium");
-  const [assignee, setAssignee] = useState("both");
   const [saving, setSaving] = useState(false);
 
   const isEvent = task?.type === "event";
@@ -82,8 +71,6 @@ export function EditTaskDialog({
     setDueDate(task.dueDate ?? "");
     setDueTime(task.dueTime ?? "");
     setRepeat(task.repeat);
-    setPriority(task.priority);
-    setAssignee(task.assignee);
   }, [task]);
 
   const dueDateObj = dueDate
@@ -105,8 +92,6 @@ export function EditTaskDialog({
       dueTime: isEvent ? dueTime || null : task.dueTime,
       repeat: isEvent ? repeat : task.repeat,
       repeatInterval: isEvent && repeat === "custom" ? 14 : task.repeatInterval,
-      priority: isEvent ? priority : task.priority,
-      assignee,
     });
     setSaving(false);
     onOpenChange(false);
@@ -136,13 +121,8 @@ export function EditTaskDialog({
             {isEvent ? (
               <>
                 <div className="space-y-2">
-                  <Label htmlFor="edit-time">Jam</Label>
-                  <Input
-                    id="edit-time"
-                    type="time"
-                    value={dueTime}
-                    onChange={(e) => setDueTime(e.target.value)}
-                  />
+                  <Label>Jam</Label>
+                  <TimeSelect value={dueTime} onValueChange={setDueTime} />
                 </div>
 
                 <div className="space-y-2">
@@ -193,25 +173,6 @@ export function EditTaskDialog({
                       {CATEGORIES.map((c) => (
                         <SelectItem key={c} value={c} className="capitalize">
                           {c}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Prioritas</Label>
-                  <Select
-                    value={priority}
-                    onValueChange={(v) => setPriority(v as Task["priority"])}
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {(["low", "medium", "high"] as const).map((p) => (
-                        <SelectItem key={p} value={p}>
-                          {PRIORITY_LABELS[p]}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -270,22 +231,6 @@ export function EditTaskDialog({
                   setVisibility(checked ? "shared" : "private")
                 }
               />
-            </div>
-
-            <div className="space-y-2">
-              <Label>Untuk</Label>
-              <Select value={assignee} onValueChange={setAssignee}>
-                <SelectTrigger className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="both">Keduanya</SelectItem>
-                  <SelectItem value={userEmail}>Kamu</SelectItem>
-                  {partnerEmail && (
-                    <SelectItem value={partnerEmail}>Pasangan</SelectItem>
-                  )}
-                </SelectContent>
-              </Select>
             </div>
           </div>
 

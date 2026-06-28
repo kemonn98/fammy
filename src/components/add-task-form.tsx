@@ -24,21 +24,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { TimeSelect } from "@/components/time-select";
 
 interface AddTaskFormProps {
   userEmail: string;
-  partnerEmail: string | null;
   variant?: "inline" | "page";
   onSaved?: () => void;
   defaultType?: TaskType;
   defaultDate?: string;
 }
-
-const PRIORITY_LABELS: Record<Task["priority"], string> = {
-  low: "Prioritas rendah",
-  medium: "Prioritas sedang",
-  high: "Prioritas tinggi",
-};
 
 const REPEAT_LABELS: Record<Task["repeat"], string> = {
   none: "Tidak berulang",
@@ -50,7 +44,6 @@ const REPEAT_LABELS: Record<Task["repeat"], string> = {
 
 export function AddTaskForm({
   userEmail,
-  partnerEmail,
   variant = "page",
   onSaved,
   defaultType = "todo",
@@ -70,8 +63,6 @@ export function AddTaskForm({
   const [dateOpen, setDateOpen] = useState(false);
   const [dueTime, setDueTime] = useState("");
   const [repeat, setRepeat] = useState<Task["repeat"]>("none");
-  const [priority, setPriority] = useState<Task["priority"]>("medium");
-  const [assignee, setAssignee] = useState("both");
   const [saving, setSaving] = useState(false);
 
   const dueDateObj = dueDate
@@ -87,8 +78,6 @@ export function AddTaskForm({
     setDueDate(defaultDate);
     setDueTime("");
     setRepeat("none");
-    setPriority("medium");
-    setAssignee("both");
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -102,14 +91,14 @@ export function AddTaskForm({
       note: isEvent ? note : "",
       type,
       visibility,
-      assignee,
+      assignee: "both",
       createdBy: userEmail,
       dueDate: isEvent ? dueDate || null : null,
       dueTime: isEvent ? dueTime || null : null,
       repeat: isEvent ? repeat : "none",
       repeatInterval: isEvent && repeat === "custom" ? 14 : null,
       repeatUntil: null,
-      priority: isEvent ? priority : "medium",
+      priority: "medium",
       category: isEvent ? category : "lainnya",
       status: "active",
       completedAt: null,
@@ -183,13 +172,8 @@ export function AddTaskForm({
           {showMore && (
             <div className="space-y-4 border-t border-border pt-4">
               <div className="space-y-2">
-                <Label htmlFor="time">Jam</Label>
-                <Input
-                  id="time"
-                  type="time"
-                  value={dueTime}
-                  onChange={(e) => setDueTime(e.target.value)}
-                />
+                <Label>Jam</Label>
+                <TimeSelect value={dueTime} onValueChange={setDueTime} />
               </div>
 
               <div className="space-y-2">
@@ -267,41 +251,6 @@ export function AddTaskForm({
                     setVisibility(checked ? "shared" : "private")
                   }
                 />
-              </div>
-
-              <div className="space-y-2">
-                <Label>Prioritas</Label>
-                <Select
-                  value={priority}
-                  onValueChange={(v) => setPriority(v as Task["priority"])}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {(["low", "medium", "high"] as const).map((p) => (
-                      <SelectItem key={p} value={p}>
-                        {PRIORITY_LABELS[p]}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-2">
-                <Label>Untuk</Label>
-                <Select value={assignee} onValueChange={setAssignee}>
-                  <SelectTrigger className="w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="both">Keduanya</SelectItem>
-                    <SelectItem value={userEmail}>Kamu</SelectItem>
-                    {partnerEmail && (
-                      <SelectItem value={partnerEmail}>Pasangan</SelectItem>
-                    )}
-                  </SelectContent>
-                </Select>
               </div>
 
               <div className="space-y-2">
