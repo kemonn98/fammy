@@ -14,18 +14,18 @@ interface TaskListProps {
   tasks: Task[];
   filter: VisibilityFilter;
   userEmail: string;
+  partnerEmail?: string | null;
   mode: "today" | "all";
   onComplete?: (task: Task) => void;
-  onTaskClick?: (task: Task) => void;
 }
 
 export function TaskList({
   tasks,
   filter,
   userEmail,
+  partnerEmail = null,
   mode,
   onComplete,
-  onTaskClick,
 }: TaskListProps) {
   const filtered = tasks.filter(
     (t) =>
@@ -53,8 +53,9 @@ export function TaskList({
           <TaskItem
             key={task.id}
             task={task}
+            userEmail={userEmail}
+            partnerEmail={partnerEmail}
             onComplete={onComplete}
-            onClick={onTaskClick}
           />
         ))}
       </div>
@@ -77,10 +78,11 @@ export function TaskList({
                 <TaskItem
                   key={task.id}
                   task={task}
+                  userEmail={userEmail}
+                  partnerEmail={partnerEmail}
                   onComplete={
                     task.status === "active" ? onComplete : undefined
                   }
-                  onClick={onTaskClick}
                   showDate
                 />
               ))}

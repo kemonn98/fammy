@@ -120,7 +120,11 @@ export function AgendaPageClient({ partnerEmail }: AgendaPageClientProps) {
               <TaskItem
                 key={task.id}
                 task={task}
-                onComplete={task.status === "active" ? handleComplete : undefined}
+                userEmail={userEmail}
+                partnerEmail={partnerEmail}
+                onComplete={
+                  task.status === "active" ? handleComplete : undefined
+                }
               />
             ))}
           </div>

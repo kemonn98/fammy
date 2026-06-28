@@ -34,6 +34,7 @@ export function TodayPageClient({ partnerEmail }: TodayPageClientProps) {
           tasks={tasks}
           filter={filter}
           userEmail={userEmail}
+          partnerEmail={partnerEmail}
           mode="today"
           onComplete={handleComplete}
         />
