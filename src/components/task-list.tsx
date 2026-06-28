@@ -6,7 +6,6 @@ import {
   groupTasksByDate,
   isActiveTask,
   isDueTodayOrNoDate,
-  isEventTodayOrTomorrow,
   matchesVisibilityFilter,
 } from "@/lib/tasks/filters";
 import { TaskItem } from "@/components/task-item";
@@ -39,53 +38,25 @@ export function TaskList({
     const todos = filtered.filter(
       (t) => isActiveTask(t) && t.type === "todo" && isDueTodayOrNoDate(t),
     );
-    const events = filtered.filter(
-      (t) => isActiveTask(t) && isEventTodayOrTomorrow(t),
-    );
+
+    if (todos.length === 0) {
+      return (
+        <p className="rounded-xl bg-muted/50 px-4 py-10 text-center text-sm text-muted-foreground">
+          Tidak ada todo hari ini
+        </p>
+      );
+    }
 
     return (
-      <div className="space-y-6">
-        <section>
-          <h2 className="mb-3 text-sm font-medium text-stone-500">
-            Perlu dikerjakan
-          </h2>
-          {todos.length === 0 ? (
-            <p className="rounded-2xl bg-stone-50 px-4 py-8 text-center text-sm text-stone-400">
-              Tidak ada todo
-            </p>
-          ) : (
-            <div className="space-y-2">
-              {todos.map((task) => (
-                <TaskItem
-                  key={task.id}
-                  task={task}
-                  onComplete={onComplete}
-                  onClick={onTaskClick}
-                />
-              ))}
-            </div>
-          )}
-        </section>
-
-        <section>
-          <h2 className="mb-3 text-sm font-medium text-stone-500">Agenda</h2>
-          {events.length === 0 ? (
-            <p className="rounded-2xl bg-stone-50 px-4 py-8 text-center text-sm text-stone-400">
-              Tidak ada agenda
-            </p>
-          ) : (
-            <div className="space-y-2">
-              {events.map((task) => (
-                <TaskItem
-                  key={task.id}
-                  task={task}
-                  onComplete={onComplete}
-                  onClick={onTaskClick}
-                />
-              ))}
-            </div>
-          )}
-        </section>
+      <div className="space-y-2">
+        {todos.map((task) => (
+          <TaskItem
+            key={task.id}
+            task={task}
+            onComplete={onComplete}
+            onClick={onTaskClick}
+          />
+        ))}
       </div>
     );
   }
@@ -98,7 +69,9 @@ export function TaskList({
         if (items.length === 0) return null;
         return (
           <section key={label}>
-            <h2 className="mb-3 text-sm font-medium text-stone-500">{label}</h2>
+            <h2 className="mb-3 text-sm font-medium text-muted-foreground">
+              {label}
+            </h2>
             <div className="space-y-2">
               {items.map((task) => (
                 <TaskItem

@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { auth, signOut } from "@/lib/auth";
 import { BottomNav } from "@/components/bottom-nav";
 import { SyncProvider } from "@/components/sync-provider";
+import { Button } from "@/components/ui/button";
 
 export default async function AppLayout({
   children,
@@ -15,7 +16,7 @@ export default async function AppLayout({
     <SyncProvider>
       <div className="mx-auto min-h-screen max-w-lg px-4 pb-24 pt-6">
         <div className="mb-4 flex items-center justify-between">
-          <span className="text-sm font-semibold tracking-tight text-[var(--accent)]">
+          <span className="text-sm font-semibold tracking-tight text-primary">
             Fammy
           </span>
           <form
@@ -24,12 +25,14 @@ export default async function AppLayout({
               await signOut({ redirectTo: "/login" });
             }}
           >
-            <button
+            <Button
               type="submit"
-              className="text-xs text-stone-400 hover:text-stone-600"
+              variant="ghost"
+              size="sm"
+              className="text-muted-foreground"
             >
               Keluar
-            </button>
+            </Button>
           </form>
         </div>
         {children}

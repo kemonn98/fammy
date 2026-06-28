@@ -1,4 +1,5 @@
 import { signIn } from "@/lib/auth";
+import { Button } from "@/components/ui/button";
 
 export default function LoginPage({
   searchParams,
@@ -8,8 +9,8 @@ export default function LoginPage({
   return (
     <div className="flex min-h-screen flex-col items-center justify-center px-6">
       <div className="w-full max-w-sm text-center">
-        <h1 className="text-3xl font-semibold text-stone-900">Fammy</h1>
-        <p className="mt-2 text-sm text-stone-500">
+        <h1 className="text-3xl font-semibold text-primary">Fammy</h1>
+        <p className="mt-2 text-sm text-muted-foreground">
           Todo & agenda untuk kita berdua
         </p>
 
@@ -22,13 +23,10 @@ export default function LoginPage({
           }}
           className="mt-10"
         >
-          <button
-            type="submit"
-            className="flex w-full items-center justify-center gap-3 rounded-2xl bg-stone-900 px-6 py-4 text-sm font-medium text-white transition-opacity hover:opacity-90"
-          >
+          <Button type="submit" size="lg" className="h-12 w-full text-sm">
             <GoogleIcon />
             Masuk dengan Google
-          </button>
+          </Button>
         </form>
       </div>
     </div>

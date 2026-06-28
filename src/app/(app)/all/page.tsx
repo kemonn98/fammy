@@ -9,7 +9,7 @@ export default async function AllPage() {
   return (
     <>
       <header className="mb-6">
-        <h1 className="text-2xl font-semibold text-stone-900">Semua</h1>
+        <h1 className="text-2xl font-semibold text-foreground">Semua</h1>
       </header>
       <AllPageClient />
     </>

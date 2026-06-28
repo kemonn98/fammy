@@ -2,6 +2,12 @@
 
 import { useState, useSyncExternalStore } from "react";
 import { Bell } from "lucide-react";
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
 
 function urlBase64ToUint8Array(base64String: string): Uint8Array {
   const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
@@ -71,38 +77,30 @@ export function PushPermissionBanner() {
   if (!hydrated || dismissed || !shouldShowPushBanner()) return null;
 
   return (
-    <div className="mb-4 rounded-2xl bg-[var(--accent-light)] p-4 text-sm text-stone-800 ring-1 ring-[var(--accent)]/20">
-      <div className="flex items-start gap-3">
-        <Bell className="mt-0.5 h-5 w-5 shrink-0 text-[var(--accent)]" />
-        <div className="flex-1">
-          <p className="font-medium">Aktifkan notifikasi</p>
-          <p className="mt-1 text-stone-600">
-            {isStandalone()
-              ? "Dapatkan ringkasan harian dan pengingat event."
-              : "Pasang dulu ke Home Screen (iOS), lalu aktifkan notifikasi."}
-          </p>
-          <div className="mt-3 flex gap-2">
-            <button
-              type="button"
-              onClick={subscribe}
-              disabled={loading}
-              className="rounded-xl bg-[var(--accent)] px-4 py-2 text-xs font-semibold text-white disabled:opacity-50"
-            >
-              {loading ? "..." : "Aktifkan"}
-            </button>
-            <button
-              type="button"
-              onClick={() => {
-                localStorage.setItem("push-banner-dismissed", "1");
-                setDismissed(true);
-              }}
-              className="rounded-xl px-4 py-2 text-xs text-stone-500"
-            >
-              Nanti
-            </button>
-          </div>
-        </div>
+    <Alert className="mb-4 bg-accent/40">
+      <Bell className="text-primary" />
+      <AlertTitle>Aktifkan notifikasi</AlertTitle>
+      <AlertDescription>
+        {isStandalone()
+          ? "Dapatkan ringkasan harian dan pengingat event."
+          : "Pasang dulu ke Home Screen (iOS), lalu aktifkan notifikasi."}
+      </AlertDescription>
+      <div className="col-start-2 mt-2 flex gap-2">
+        <Button type="button" size="sm" onClick={subscribe} disabled={loading}>
+          {loading ? "..." : "Aktifkan"}
+        </Button>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={() => {
+            localStorage.setItem("push-banner-dismissed", "1");
+            setDismissed(true);
+          }}
+        >
+          Nanti
+        </Button>
       </div>
-    </div>
+    </Alert>
   );
 }

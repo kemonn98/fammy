@@ -1,8 +1,10 @@
 "use client";
 
-import { Check, Clock, Lock, Users } from "lucide-react";
+import { Clock, Lock, Users } from "lucide-react";
 import type { Task } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
 
 interface TaskItemProps {
   task: Task;
@@ -12,9 +14,9 @@ interface TaskItemProps {
 }
 
 const priorityDot: Record<Task["priority"], string> = {
-  low: "bg-stone-300",
-  medium: "bg-[var(--accent)]",
-  high: "bg-rose-400",
+  low: "bg-muted-foreground/40",
+  medium: "bg-primary",
+  high: "bg-destructive",
 };
 
 export function TaskItem({
@@ -28,25 +30,17 @@ export function TaskItem({
   return (
     <div
       className={cn(
-        "flex items-start gap-3 rounded-2xl bg-white px-4 py-3 shadow-sm ring-1 ring-stone-100 transition-opacity",
-        done && "opacity-50",
+        "flex items-start gap-3 rounded-xl bg-card px-4 py-3.5 ring-1 ring-foreground/5 shadow-xs transition-opacity",
+        done && "opacity-60",
       )}
     >
-      {onComplete && !done && (
-        <button
-          type="button"
-          onClick={() => onComplete(task)}
-          className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 border-stone-300 text-transparent transition-colors hover:border-[var(--accent)] hover:text-[var(--accent)]"
-          aria-label="Selesai"
-        >
-          <Check className="h-4 w-4" />
-        </button>
-      )}
-      {done && (
-        <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[var(--accent)] text-white">
-          <Check className="h-4 w-4" />
-        </div>
-      )}
+      <Checkbox
+        checked={done}
+        disabled={done || !onComplete}
+        onCheckedChange={() => onComplete?.(task)}
+        aria-label="Tandai selesai"
+        className="mt-0.5 size-6 rounded-full"
+      />
 
       <button
         type="button"
@@ -62,24 +56,24 @@ export function TaskItem({
           />
           <p
             className={cn(
-              "truncate font-medium text-stone-900",
-              done && "line-through",
+              "truncate font-medium text-foreground",
+              done && "text-muted-foreground line-through",
             )}
           >
             {task.title}
           </p>
         </div>
 
-        <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-stone-400">
+        <div className="mt-1.5 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
           {task.visibility === "private" ? (
             <Lock className="h-3 w-3" />
           ) : (
             <Users className="h-3 w-3" />
           )}
           {task.category && (
-            <span className="rounded-full bg-stone-100 px-2 py-0.5">
+            <Badge variant="secondary" className="capitalize">
               {task.category}
-            </span>
+            </Badge>
           )}
           {task.type === "event" && task.dueTime && (
             <span className="flex items-center gap-1">
@@ -87,9 +81,7 @@ export function TaskItem({
               {task.dueTime}
             </span>
           )}
-          {showDate && task.dueDate && (
-            <span>{task.dueDate}</span>
-          )}
+          {showDate && task.dueDate && <span>{task.dueDate}</span>}
         </div>
       </button>
     </div>

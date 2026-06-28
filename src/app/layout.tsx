@@ -1,8 +1,11 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Geist } from "next/font/google";
 import { Providers } from "@/components/providers";
 import { SerwistRegister } from "@/components/serwist-register";
 import "./globals.css";
+import { cn } from "@/lib/utils";
+
+const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 const inter = Inter({
   subsets: ["latin"],
@@ -37,10 +40,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="id" className={`${inter.variable} h-full`}>
+    <html lang="id" className={cn("h-full", inter.variable, "font-sans", geist.variable)}>
       <body
         suppressHydrationWarning
-        className="min-h-full bg-[var(--background)] font-sans text-stone-900 antialiased"
+        className="min-h-full bg-background font-sans text-foreground antialiased"
       >
         <Providers>
           {children}

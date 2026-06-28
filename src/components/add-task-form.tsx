@@ -2,33 +2,94 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { ChevronDown } from "lucide-react";
+import { CalendarIcon, ChevronDown, Plus } from "lucide-react";
+import { format, parse } from "date-fns";
+import { id as idLocale } from "date-fns/locale";
 import type { Task, TaskType, Visibility } from "@/lib/types";
 import { CATEGORIES } from "@/lib/tasks/filters";
 import { createTaskLocal } from "@/lib/sync/engine";
 import { createId, nowIso } from "@/lib/utils";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface AddTaskFormProps {
   userEmail: string;
   partnerEmail: string | null;
+  variant?: "inline" | "page";
+  onSaved?: () => void;
+  defaultType?: TaskType;
+  defaultDate?: string;
 }
 
-export function AddTaskForm({ userEmail, partnerEmail }: AddTaskFormProps) {
+const PRIORITY_LABELS: Record<Task["priority"], string> = {
+  low: "Prioritas rendah",
+  medium: "Prioritas sedang",
+  high: "Prioritas tinggi",
+};
+
+const REPEAT_LABELS: Record<Task["repeat"], string> = {
+  none: "Tidak berulang",
+  daily: "Harian",
+  weekly: "Mingguan",
+  monthly: "Bulanan",
+  custom: "Tiap 14 hari",
+};
+
+export function AddTaskForm({
+  userEmail,
+  partnerEmail,
+  variant = "page",
+  onSaved,
+  defaultType = "todo",
+  defaultDate = "",
+}: AddTaskFormProps) {
   const router = useRouter();
+  const isInline = variant === "inline";
+  const isEvent = defaultType === "event";
+  const type = defaultType;
+
   const [title, setTitle] = useState("");
-  const [type, setType] = useState<TaskType>("todo");
   const [visibility, setVisibility] = useState<Visibility>("shared");
   const [showMore, setShowMore] = useState(false);
   const [note, setNote] = useState("");
   const [category, setCategory] = useState("lainnya");
-  const [dueDate, setDueDate] = useState("");
+  const [dueDate, setDueDate] = useState(defaultDate);
+  const [dateOpen, setDateOpen] = useState(false);
   const [dueTime, setDueTime] = useState("");
   const [repeat, setRepeat] = useState<Task["repeat"]>("none");
   const [priority, setPriority] = useState<Task["priority"]>("medium");
   const [assignee, setAssignee] = useState("both");
   const [saving, setSaving] = useState(false);
 
+  const dueDateObj = dueDate
+    ? parse(dueDate, "yyyy-MM-dd", new Date())
+    : undefined;
+
+  function reset() {
+    setTitle("");
+    setVisibility("shared");
+    setShowMore(false);
+    setNote("");
+    setCategory("lainnya");
+    setDueDate(defaultDate);
+    setDueTime("");
+    setRepeat("none");
+    setPriority("medium");
+    setAssignee("both");
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -38,22 +99,22 @@ export function AddTaskForm({ userEmail, partnerEmail }: AddTaskFormProps) {
     const task: Task = {
       id: createId(),
       title: title.trim(),
-      note,
+      note: isEvent ? note : "",
       type,
       visibility,
       assignee,
       createdBy: userEmail,
-      dueDate: dueDate || null,
-      dueTime: type === "event" ? dueTime || null : null,
-      repeat,
-      repeatInterval: repeat === "custom" ? 14 : null,
+      dueDate: isEvent ? dueDate || null : null,
+      dueTime: isEvent ? dueTime || null : null,
+      repeat: isEvent ? repeat : "none",
+      repeatInterval: isEvent && repeat === "custom" ? 14 : null,
       repeatUntil: null,
-      priority,
-      category,
+      priority: isEvent ? priority : "medium",
+      category: isEvent ? category : "lainnya",
       status: "active",
       completedAt: null,
       completedBy: null,
-      remindBefore: type === "event" ? 30 : null,
+      remindBefore: isEvent ? 30 : null,
       updatedAt: nowIso(),
       deleted: false,
       recurrenceParentId: null,
@@ -62,150 +123,245 @@ export function AddTaskForm({ userEmail, partnerEmail }: AddTaskFormProps) {
 
     await createTaskLocal(task);
     setSaving(false);
-    router.push("/today");
+
+    if (onSaved) {
+      reset();
+      onSaved();
+    } else {
+      router.push("/today");
+    }
   }
 
+  const placeholder = isEvent
+    ? isInline
+      ? "Tambah agenda..."
+      : "Apa acaranya?"
+    : isInline
+      ? "Tambah tugas..."
+      : "Apa yang perlu dilakukan?";
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      <input
-        type="text"
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        placeholder="Apa yang perlu dilakukan?"
-        className="w-full border-0 bg-transparent text-2xl font-medium text-stone-900 placeholder:text-stone-300 focus:outline-none focus:ring-0"
-        autoFocus
-      />
-
-      <div className="flex gap-2">
-        {(["todo", "event"] as const).map((t) => (
-          <button
-            key={t}
-            type="button"
-            onClick={() => setType(t)}
+    <form
+      onSubmit={handleSubmit}
+      className={cn(
+        "space-y-4",
+        isInline && "rounded-xl bg-card p-4 ring-1 ring-foreground/10",
+      )}
+    >
+      {isEvent ? (
+        <>
+          <Input
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder={placeholder}
             className={cn(
-              "rounded-full px-4 py-2 text-sm font-medium transition-colors",
-              type === t
-                ? "bg-[var(--accent)] text-white"
-                : "bg-stone-100 text-stone-600",
+              "h-12 border-0 bg-transparent px-0 font-medium shadow-none focus-visible:ring-0",
+              isInline ? "text-lg" : "text-2xl",
             )}
-          >
-            {t === "todo" ? "Todo" : "Event"}
-          </button>
-        ))}
-      </div>
-
-      <div className="flex gap-2">
-        {(["shared", "private"] as const).map((v) => (
-          <button
-            key={v}
-            type="button"
-            onClick={() => setVisibility(v)}
-            className={cn(
-              "rounded-full px-4 py-2 text-sm font-medium transition-colors",
-              visibility === v
-                ? "bg-stone-900 text-white"
-                : "bg-stone-100 text-stone-600",
-            )}
-          >
-            {v === "shared" ? "Bersama" : "Pribadi"}
-          </button>
-        ))}
-      </div>
-
-      <button
-        type="button"
-        onClick={() => setShowMore(!showMore)}
-        className="flex items-center gap-1 text-sm text-stone-500"
-      >
-        Lainnya
-        <ChevronDown
-          className={cn("h-4 w-4 transition-transform", showMore && "rotate-180")}
-        />
-      </button>
-
-      {showMore && (
-        <div className="space-y-4 rounded-2xl bg-stone-50 p-4">
-          <textarea
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-            placeholder="Catatan"
-            rows={2}
-            className="w-full resize-none rounded-xl border-0 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[var(--accent)]"
+            autoFocus={!isInline}
           />
 
-          <input
-            type="date"
-            value={dueDate}
-            onChange={(e) => setDueDate(e.target.value)}
-            className="w-full rounded-xl border-0 bg-white px-3 py-2 text-sm"
-          />
+          <div className="flex items-center justify-between gap-2">
+            <Button
+              type="button"
+              variant={showMore ? "secondary" : "outline"}
+              onClick={() => setShowMore(!showMore)}
+            >
+              Detail
+              <ChevronDown
+                className={cn("transition-transform", showMore && "rotate-180")}
+              />
+            </Button>
 
-          {type === "event" && (
-            <input
-              type="time"
-              value={dueTime}
-              onChange={(e) => setDueTime(e.target.value)}
-              className="w-full rounded-xl border-0 bg-white px-3 py-2 text-sm"
-            />
+            <Button type="submit" disabled={!title.trim() || saving}>
+              <Plus />
+              {saving ? "Menyimpan..." : isInline ? "Tambah" : "Simpan"}
+            </Button>
+          </div>
+
+          {showMore && (
+            <div className="space-y-4 border-t border-border pt-4">
+              <div className="space-y-2">
+                <Label htmlFor="time">Jam</Label>
+                <Input
+                  id="time"
+                  type="time"
+                  value={dueTime}
+                  onChange={(e) => setDueTime(e.target.value)}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Tanggal</Label>
+                <Popover open={dateOpen} onOpenChange={setDateOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start font-normal",
+                        !dueDate && "text-muted-foreground",
+                      )}
+                    >
+                      <CalendarIcon />
+                      {dueDateObj
+                        ? format(dueDateObj, "EEEE, d MMMM yyyy", {
+                            locale: idLocale,
+                          })
+                        : "Pilih tanggal"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    className="w-(--radix-popover-trigger-width) p-3"
+                    align="start"
+                  >
+                    <Calendar
+                      mode="single"
+                      selected={dueDateObj}
+                      onSelect={(date) => {
+                        setDueDate(date ? format(date, "yyyy-MM-dd") : "");
+                        setDateOpen(false);
+                      }}
+                      locale={idLocale}
+                      autoFocus
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Kategori</Label>
+                <Select value={category} onValueChange={setCategory}>
+                  <SelectTrigger className="w-full capitalize">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {CATEGORIES.map((c) => (
+                      <SelectItem key={c} value={c} className="capitalize">
+                        {c}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex items-center justify-between rounded-md bg-muted/60 px-4 py-3">
+                <div className="space-y-0.5">
+                  <Label
+                    htmlFor="visibility-switch"
+                    className="text-sm font-medium"
+                  >
+                    Agenda bersama
+                  </Label>
+                  <p className="text-xs text-muted-foreground">
+                    {visibility === "shared"
+                      ? "Terlihat oleh pasangan"
+                      : "Hanya untuk kamu"}
+                  </p>
+                </div>
+                <Switch
+                  id="visibility-switch"
+                  checked={visibility === "shared"}
+                  onCheckedChange={(checked) =>
+                    setVisibility(checked ? "shared" : "private")
+                  }
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Prioritas</Label>
+                <Select
+                  value={priority}
+                  onValueChange={(v) => setPriority(v as Task["priority"])}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {(["low", "medium", "high"] as const).map((p) => (
+                      <SelectItem key={p} value={p}>
+                        {PRIORITY_LABELS[p]}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Untuk</Label>
+                <Select value={assignee} onValueChange={setAssignee}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="both">Keduanya</SelectItem>
+                    <SelectItem value={userEmail}>Kamu</SelectItem>
+                    {partnerEmail && (
+                      <SelectItem value={partnerEmail}>Pasangan</SelectItem>
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label>Pengulangan</Label>
+                <Select
+                  value={repeat}
+                  onValueChange={(v) => setRepeat(v as Task["repeat"])}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {(
+                      ["none", "daily", "weekly", "monthly", "custom"] as const
+                    ).map((r) => (
+                      <SelectItem key={r} value={r}>
+                        {REPEAT_LABELS[r]}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="note">Catatan</Label>
+                <Textarea
+                  id="note"
+                  value={note}
+                  onChange={(e) => setNote(e.target.value)}
+                  placeholder="Tambahkan detail..."
+                  rows={2}
+                  className="resize-none"
+                />
+              </div>
+            </div>
           )}
-
-          <select
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            className="w-full rounded-xl border-0 bg-white px-3 py-2 text-sm"
-          >
-            {CATEGORIES.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
-          </select>
-
-          <select
-            value={priority}
-            onChange={(e) =>
-              setPriority(e.target.value as Task["priority"])
-            }
-            className="w-full rounded-xl border-0 bg-white px-3 py-2 text-sm"
-          >
-            <option value="low">Prioritas rendah</option>
-            <option value="medium">Prioritas sedang</option>
-            <option value="high">Prioritas tinggi</option>
-          </select>
-
-          <select
-            value={assignee}
-            onChange={(e) => setAssignee(e.target.value)}
-            className="w-full rounded-xl border-0 bg-white px-3 py-2 text-sm"
-          >
-            <option value="both">Keduanya</option>
-            <option value={userEmail}>Kamu</option>
-            {partnerEmail && (
-              <option value={partnerEmail}>Pasangan</option>
+        </>
+      ) : (
+        <div className="flex items-center gap-2">
+          <Input
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder={placeholder}
+            className={cn(
+              "min-w-0 flex-1 border-0 bg-transparent px-0 font-medium shadow-none focus-visible:ring-0",
+              isInline ? "h-11 text-lg" : "h-12 text-2xl",
             )}
-          </select>
-
-          <select
-            value={repeat}
-            onChange={(e) => setRepeat(e.target.value as Task["repeat"])}
-            className="w-full rounded-xl border-0 bg-white px-3 py-2 text-sm"
+            autoFocus={!isInline}
+          />
+          <Button
+            type="submit"
+            disabled={!title.trim() || saving}
+            className="shrink-0"
           >
-            <option value="none">Tidak berulang</option>
-            <option value="daily">Harian</option>
-            <option value="weekly">Mingguan</option>
-            <option value="monthly">Bulanan</option>
-            <option value="custom">Tiap 14 hari</option>
-          </select>
+            <Plus />
+            {saving ? "..." : isInline ? "Tambah" : "Simpan"}
+          </Button>
         </div>
       )}
-
-      <button
-        type="submit"
-        disabled={!title.trim() || saving}
-        className="w-full rounded-2xl bg-[var(--accent)] py-4 text-base font-semibold text-white transition-opacity disabled:opacity-40"
-      >
-        {saving ? "Menyimpan..." : "Simpan"}
-      </button>
     </form>
   );
 }
