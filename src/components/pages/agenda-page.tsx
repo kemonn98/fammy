@@ -18,7 +18,7 @@ export function AgendaPageClient() {
   const { data: session } = useSession();
   const tasks = useTasks();
   const userEmail = session?.user?.email ?? "";
-  const [filter, setFilter] = useState<VisibilityFilter>("shared");
+  const [filter, setFilter] = useState<VisibilityFilter>("mine");
   const [selectedDate, setSelectedDate] = useState<Date>(startOfDay(new Date()));
   const [month, setMonth] = useState<Date>(startOfDay(new Date()));
 
@@ -57,7 +57,13 @@ export function AgendaPageClient() {
             return false;
           }
         })
-        .sort((a, b) => (a.dueTime ?? "99:99").localeCompare(b.dueTime ?? "99:99")),
+        .sort((a, b) => {
+          const byTime = (a.dueTime ?? "99:99").localeCompare(
+            b.dueTime ?? "99:99",
+          );
+          if (byTime !== 0) return byTime;
+          return a.updatedAt.localeCompare(b.updatedAt);
+        }),
     [events, selectedDate],
   );
 
@@ -106,11 +112,7 @@ export function AgendaPageClient() {
           )}
         </div>
 
-        {dayEvents.length === 0 ? (
-          <p className="rounded-xl bg-muted/50 px-4 py-10 text-center text-sm text-muted-foreground">
-            Tidak ada agenda di tanggal ini
-          </p>
-        ) : (
+        {dayEvents.length > 0 && (
           <div className="space-y-2">
             {dayEvents.map((task) => (
               <TaskItem
@@ -124,16 +126,16 @@ export function AgendaPageClient() {
             ))}
           </div>
         )}
-      </div>
 
-      <AddTaskForm
-        key={format(selectedDate, "yyyy-MM-dd")}
-        userEmail={userEmail}
-        type="event"
-        visibility={filter === "shared" ? "shared" : "private"}
-        defaultDate={format(selectedDate, "yyyy-MM-dd")}
-        onSaved={() => undefined}
-      />
+        <AddTaskForm
+          key={format(selectedDate, "yyyy-MM-dd")}
+          userEmail={userEmail}
+          type="event"
+          visibility={filter === "shared" ? "shared" : "private"}
+          defaultDate={format(selectedDate, "yyyy-MM-dd")}
+          onSaved={() => undefined}
+        />
+      </div>
     </div>
   );
 }

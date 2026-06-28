@@ -7,6 +7,7 @@ import {
   isActiveTask,
   isDueTodayOrNoDate,
   matchesVisibilityFilter,
+  sortTasksOldestFirst,
 } from "@/lib/tasks/filters";
 import { TaskItem } from "@/components/task-item";
 
@@ -33,17 +34,13 @@ export function TaskList({
   );
 
   if (mode === "today") {
-    const todos = filtered.filter(
-      (t) => isActiveTask(t) && t.type === "todo" && isDueTodayOrNoDate(t),
+    const todos = sortTasksOldestFirst(
+      filtered.filter(
+        (t) => isActiveTask(t) && t.type === "todo" && isDueTodayOrNoDate(t),
+      ),
     );
 
-    if (todos.length === 0) {
-      return (
-        <p className="rounded-xl bg-muted/50 px-4 py-10 text-center text-sm text-muted-foreground">
-          Tidak ada todo hari ini
-        </p>
-      );
-    }
+    if (todos.length === 0) return null;
 
     return (
       <div className="space-y-2">
@@ -65,13 +62,14 @@ export function TaskList({
     <div className="space-y-6">
       {Object.entries(groups).map(([label, items]) => {
         if (items.length === 0) return null;
+        const sorted = sortTasksOldestFirst(items);
         return (
           <section key={label}>
             <h2 className="mb-3 text-sm font-medium text-muted-foreground">
               {label}
             </h2>
             <div className="space-y-2">
-              {items.map((task) => (
+              {sorted.map((task) => (
                 <TaskItem
                   key={task.id}
                   task={task}

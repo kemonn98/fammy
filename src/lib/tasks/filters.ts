@@ -1,6 +1,10 @@
 import { isToday, isTomorrow, parseISO, startOfDay } from "date-fns";
 import type { Task, VisibilityFilter } from "@/lib/types";
 
+export function sortTasksOldestFirst(tasks: Task[]): Task[] {
+  return [...tasks].sort((a, b) => a.updatedAt.localeCompare(b.updatedAt));
+}
+
 export function canViewTask(task: Task, userEmail: string): boolean {
   if (task.deleted) return false;
   if (task.visibility === "shared") return true;

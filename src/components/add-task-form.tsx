@@ -121,25 +121,43 @@ export function AddTaskForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-2">
-      <div className="flex items-center gap-3 rounded-xl bg-card px-4 py-3.5 ring-1 ring-foreground/5 shadow-xs">
+      <div className="flex items-start gap-3 rounded-xl bg-card px-4 py-3.5 ring-1 ring-foreground/5 shadow-xs">
         <span
           aria-hidden
-          className="size-6 shrink-0 rounded-full border-2 border-muted-foreground/30"
+          className="mt-0.5 size-6 shrink-0 rounded-full border-2 border-muted-foreground/30"
         />
 
-        <input
-          type="text"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder={placeholder}
-          className="min-w-0 flex-1 bg-transparent text-base font-medium text-foreground placeholder:text-muted-foreground/60 focus:outline-none"
-        />
+        <div className="min-w-0 flex-1">
+          <input
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder={placeholder}
+            className="w-full bg-transparent text-base font-medium text-foreground placeholder:text-muted-foreground/60 focus:outline-none"
+          />
+
+          {isEvent && (
+            <button
+              type="button"
+              onClick={() => setShowMore(!showMore)}
+              className="mt-1.5 flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
+            >
+              More Details
+              <ChevronDown
+                className={cn(
+                  "size-3.5 transition-transform",
+                  showMore && "rotate-180",
+                )}
+              />
+            </button>
+          )}
+        </div>
 
         <button
           type="submit"
           disabled={!title.trim() || saving}
           aria-label={isEvent ? "Tambah agenda" : "Tambah tugas"}
-          className="grid size-8 shrink-0 place-items-center rounded-full bg-primary text-primary-foreground transition-opacity disabled:opacity-40"
+          className="mt-0.5 grid size-8 shrink-0 place-items-center rounded-full bg-primary text-primary-foreground transition-opacity disabled:opacity-40"
         >
           <Plus className="size-5" />
         </button>
@@ -147,20 +165,6 @@ export function AddTaskForm({
 
       {isEvent && (
         <>
-          <button
-            type="button"
-            onClick={() => setShowMore(!showMore)}
-            className="flex items-center gap-1 px-1 text-sm text-muted-foreground transition-colors hover:text-foreground"
-          >
-            More Details
-            <ChevronDown
-              className={cn(
-                "size-4 transition-transform",
-                showMore && "rotate-180",
-              )}
-            />
-          </button>
-
           {showMore && (
             <div className="space-y-4 rounded-xl bg-card p-4 ring-1 ring-foreground/5">
               <div className="space-y-2">
@@ -277,6 +281,15 @@ export function AddTaskForm({
                   className="resize-none"
                 />
               </div>
+
+              <Button
+                type="submit"
+                disabled={!title.trim() || saving}
+                className="w-full"
+              >
+                <Plus />
+                {saving ? "Menyimpan..." : "Tambah agenda"}
+              </Button>
             </div>
           )}
         </>

@@ -53,8 +53,17 @@ async function readTab(tab: string): Promise<string[][]> {
 
 async function writeTab(tab: string, rows: string[][]): Promise<void> {
   const sheets = await getSheets();
+  const spreadsheetId = getSheetId();
+
+  // Clear the whole tab first so removed rows don't linger as stale
+  // duplicates (values.update only overwrites the cells it writes).
+  await sheets.spreadsheets.values.clear({
+    spreadsheetId,
+    range: `${tab}!A:Z`,
+  });
+
   await sheets.spreadsheets.values.update({
-    spreadsheetId: getSheetId(),
+    spreadsheetId,
     range: `${tab}!A1`,
     valueInputOption: "RAW",
     requestBody: { values: rows },

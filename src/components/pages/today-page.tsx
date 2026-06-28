@@ -14,7 +14,7 @@ import { useTasks } from "@/hooks/use-tasks";
 export function TodayPageClient() {
   const { data: session } = useSession();
   const tasks = useTasks();
-  const [filter, setFilter] = useState<VisibilityFilter>("shared");
+  const [filter, setFilter] = useState<VisibilityFilter>("mine");
   const userEmail = session?.user?.email ?? "";
 
   async function handleComplete(task: Task) {
@@ -27,19 +27,19 @@ export function TodayPageClient() {
       <div className="space-y-4">
         <VisibilityToggle value={filter} onChange={setFilter} />
 
-        <AddTaskForm
-          userEmail={userEmail}
-          type="todo"
-          visibility={filter === "shared" ? "shared" : "private"}
-          onSaved={() => undefined}
-        />
-
         <TaskList
           tasks={tasks}
           filter={filter}
           userEmail={userEmail}
           mode="today"
           onComplete={handleComplete}
+        />
+
+        <AddTaskForm
+          userEmail={userEmail}
+          type="todo"
+          visibility={filter === "shared" ? "shared" : "private"}
+          onSaved={() => undefined}
         />
       </div>
 
