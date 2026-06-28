@@ -18,7 +18,7 @@ export function AgendaPageClient() {
   const { data: session } = useSession();
   const tasks = useTasks();
   const userEmail = session?.user?.email ?? "";
-  const [filter, setFilter] = useState<VisibilityFilter>("all");
+  const [filter, setFilter] = useState<VisibilityFilter>("shared");
   const [selectedDate, setSelectedDate] = useState<Date>(startOfDay(new Date()));
   const [month, setMonth] = useState<Date>(startOfDay(new Date()));
 
@@ -31,7 +31,7 @@ export function AgendaPageClient() {
           t.dueDate &&
           t.status !== "skipped" &&
           canViewTask(t, userEmail) &&
-          matchesVisibilityFilter(t, filter, userEmail),
+          matchesVisibilityFilter(t, filter),
       ),
     [tasks, userEmail, filter],
   );
@@ -128,9 +128,9 @@ export function AgendaPageClient() {
 
       <AddTaskForm
         key={format(selectedDate, "yyyy-MM-dd")}
-        variant="inline"
         userEmail={userEmail}
-        defaultType="event"
+        type="event"
+        visibility={filter === "shared" ? "shared" : "private"}
         defaultDate={format(selectedDate, "yyyy-MM-dd")}
         onSaved={() => undefined}
       />

@@ -6,7 +6,6 @@ import type { Task } from "@/lib/types";
 import { completeTaskLocal, deleteTaskLocal } from "@/lib/sync/engine";
 import { cn } from "@/lib/utils";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -79,16 +78,14 @@ export function TaskItem({
             </p>
 
             <div className="mt-1.5 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-              {task.visibility === "private" ? (
-                <Lock className="h-3 w-3" />
-              ) : (
-                <Users className="h-3 w-3" />
-              )}
-              {task.category && (
-                <Badge variant="secondary" className="capitalize">
-                  {task.category}
-                </Badge>
-              )}
+              <span className="flex items-center gap-1">
+                {task.visibility === "private" ? (
+                  <Lock className="h-3 w-3" />
+                ) : (
+                  <Users className="h-3 w-3" />
+                )}
+                {task.visibility === "private" ? "Personal" : "Shared"}
+              </span>
               {task.type === "event" && task.dueTime && (
                 <span className="flex items-center gap-1">
                   <Clock className="h-3 w-3" />
@@ -133,6 +130,7 @@ export function TaskItem({
       </SwipeableTaskRow>
 
       <EditTaskDialog
+        key={`${task.id}-${task.updatedAt}`}
         task={task}
         open={editOpen}
         onOpenChange={setEditOpen}

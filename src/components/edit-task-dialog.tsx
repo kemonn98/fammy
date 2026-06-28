@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { CalendarIcon } from "lucide-react";
 import { format, parse } from "date-fns";
 import { id as idLocale } from "date-fns/locale";
@@ -50,28 +50,19 @@ export function EditTaskDialog({
   open,
   onOpenChange,
 }: EditTaskDialogProps) {
-  const [title, setTitle] = useState("");
-  const [visibility, setVisibility] = useState<Task["visibility"]>("shared");
-  const [note, setNote] = useState("");
-  const [category, setCategory] = useState("lainnya");
-  const [dueDate, setDueDate] = useState("");
+  const [title, setTitle] = useState(task?.title ?? "");
+  const [visibility, setVisibility] = useState<Task["visibility"]>(
+    task?.visibility ?? "shared",
+  );
+  const [note, setNote] = useState(task?.note ?? "");
+  const [category, setCategory] = useState(task?.category || "lainnya");
+  const [dueDate, setDueDate] = useState(task?.dueDate ?? "");
   const [dateOpen, setDateOpen] = useState(false);
-  const [dueTime, setDueTime] = useState("");
-  const [repeat, setRepeat] = useState<Task["repeat"]>("none");
+  const [dueTime, setDueTime] = useState(task?.dueTime ?? "");
+  const [repeat, setRepeat] = useState<Task["repeat"]>(task?.repeat ?? "none");
   const [saving, setSaving] = useState(false);
 
   const isEvent = task?.type === "event";
-
-  useEffect(() => {
-    if (!task) return;
-    setTitle(task.title);
-    setVisibility(task.visibility);
-    setNote(task.note);
-    setCategory(task.category);
-    setDueDate(task.dueDate ?? "");
-    setDueTime(task.dueTime ?? "");
-    setRepeat(task.repeat);
-  }, [task]);
 
   const dueDateObj = dueDate
     ? parse(dueDate, "yyyy-MM-dd", new Date())

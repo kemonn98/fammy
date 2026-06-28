@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { getAllTasks, upsertTasks } from "@/lib/sheets/client";
+import { deleteTasks, getAllTasks, upsertTasks } from "@/lib/sheets/client";
 import { canViewTask } from "@/lib/tasks/filters";
-import type { PendingMutation, SyncResponse } from "@/lib/types";
+import type { PendingMutation, SyncResponse, Task } from "@/lib/types";
 
 export async function POST(request: Request) {
   const session = await auth();
@@ -14,18 +14,20 @@ export async function POST(request: Request) {
     const body = await request.json();
     const mutations: PendingMutation[] = body.mutations ?? [];
     const existing = await getAllTasks();
-    const map = new Map(existing.map((t) => [t.id, t]));
+    const byId = new Map(existing.map((t) => [t.id, t]));
     const applied: string[] = [];
     const conflicts: string[] = [];
+    const upserts: Task[] = [];
+    const deleteIds: string[] = [];
     const userEmail = session.user.email;
 
     for (const mutation of mutations) {
       const { payload, action } = mutation;
-      if (!canViewTask({ ...payload, deleted: false }, userEmail) && action !== "create") {
+      if (action !== "create" && !canViewTask(payload, userEmail)) {
         continue;
       }
 
-      const serverTask = map.get(payload.id);
+      const serverTask = byId.get(payload.id);
 
       if (serverTask && serverTask.updatedAt > payload.updatedAt) {
         conflicts.push(payload.id);
@@ -33,24 +35,26 @@ export async function POST(request: Request) {
       }
 
       if (action === "delete") {
-        map.set(payload.id, {
-          ...payload,
-          deleted: true,
-          updatedAt: new Date().toISOString(),
-        });
+        deleteIds.push(payload.id);
+        byId.delete(payload.id);
       } else {
-        map.set(payload.id, {
+        const updated = {
           ...payload,
+          deleted: false,
           updatedAt: new Date().toISOString(),
-        });
+        };
+        byId.set(payload.id, updated);
+        upserts.push(updated);
       }
       applied.push(payload.id);
     }
 
-    const allTasks = Array.from(map.values());
-    await upsertTasks(allTasks);
+    if (deleteIds.length > 0) await deleteTasks(deleteIds);
+    if (upserts.length > 0) await upsertTasks(upserts);
 
-    const visible = allTasks.filter((t) => canViewTask(t, userEmail));
+    const visible = Array.from(byId.values()).filter((t) =>
+      canViewTask(t, userEmail),
+    );
 
     const response: SyncResponse = {
       tasks: visible,

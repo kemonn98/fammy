@@ -94,11 +94,16 @@ export async function ensureSheetTabs(): Promise<void> {
   }
 }
 
-export async function getAllTasks(): Promise<Task[]> {
+async function readAllTasksFromSheet(): Promise<Task[]> {
   const rows = await readTab(TASK_TAB);
   return rows
     .map((row) => rowToTask(row))
     .filter((t): t is Task => t !== null);
+}
+
+export async function getAllTasks(): Promise<Task[]> {
+  const tasks = await readAllTasksFromSheet();
+  return tasks.filter((t) => !t.deleted);
 }
 
 export async function upsertTasks(tasks: Task[]): Promise<void> {
@@ -108,10 +113,21 @@ export async function upsertTasks(tasks: Task[]): Promise<void> {
   const map = new Map(existing.map((t) => [t.id, t]));
 
   for (const task of tasks) {
-    map.set(task.id, task);
+    map.set(task.id, { ...task, deleted: false });
   }
 
   const rows = [getTaskHeaders()[0], ...Array.from(map.values()).map(taskToRow)];
+  await writeTab(TASK_TAB, rows);
+}
+
+export async function deleteTasks(ids: string[]): Promise<void> {
+  if (ids.length === 0) return;
+
+  const idSet = new Set(ids);
+  const remaining = (await readAllTasksFromSheet()).filter(
+    (t) => !idSet.has(t.id) && !t.deleted,
+  );
+  const rows = [getTaskHeaders()[0], ...remaining.map(taskToRow)];
   await writeTab(TASK_TAB, rows);
 }
 

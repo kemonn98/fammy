@@ -6,6 +6,7 @@ import type { Task, VisibilityFilter } from "@/lib/types";
 import { completeTaskLocal } from "@/lib/sync/engine";
 import { VisibilityToggle } from "@/components/visibility-toggle";
 import { TaskList } from "@/components/task-list";
+import { AddTaskForm } from "@/components/add-task-form";
 import { IosInstallPrompt } from "@/components/ios-install-prompt";
 import { PushPermissionBanner } from "@/components/push-permission-banner";
 import { useTasks } from "@/hooks/use-tasks";
@@ -13,7 +14,7 @@ import { useTasks } from "@/hooks/use-tasks";
 export function TodayPageClient() {
   const { data: session } = useSession();
   const tasks = useTasks();
-  const [filter, setFilter] = useState<VisibilityFilter>("all");
+  const [filter, setFilter] = useState<VisibilityFilter>("shared");
   const userEmail = session?.user?.email ?? "";
 
   async function handleComplete(task: Task) {
@@ -25,6 +26,14 @@ export function TodayPageClient() {
     <div className="space-y-6">
       <div className="space-y-4">
         <VisibilityToggle value={filter} onChange={setFilter} />
+
+        <AddTaskForm
+          userEmail={userEmail}
+          type="todo"
+          visibility={filter === "shared" ? "shared" : "private"}
+          onSaved={() => undefined}
+        />
+
         <TaskList
           tasks={tasks}
           filter={filter}

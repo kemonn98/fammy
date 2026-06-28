@@ -16,7 +16,12 @@ export async function enqueueMutation(
     clientTimestamp: nowIso(),
     retryCount: 0,
   });
-  await database.tasks.put({ ...payload, syncStatus: "pending" });
+
+  if (action === "delete") {
+    await database.tasks.delete(payload.id);
+  } else {
+    await database.tasks.put({ ...payload, syncStatus: "pending" });
+  }
 }
 
 export async function saveTaskLocally(
@@ -33,6 +38,19 @@ export async function mergeServerTasks(tasks: Task[]): Promise<void> {
   );
 
   await database.transaction("rw", database.tasks, async () => {
+    const serverIds = new Set(tasks.map((t) => t.id));
+    const localTasks = await database.tasks.toArray();
+
+    for (const local of localTasks) {
+      if (
+        !serverIds.has(local.id) &&
+        !pendingIds.has(local.id) &&
+        local.syncStatus === "synced"
+      ) {
+        await database.tasks.delete(local.id);
+      }
+    }
+
     for (const task of tasks) {
       if (pendingIds.has(task.id)) {
         const local = await database.tasks.get(task.id);
@@ -75,8 +93,16 @@ export async function pushToServer(): Promise<SyncResponse | null> {
   const result: SyncResponse = await res.json();
   await mergeServerTasks(result.tasks);
 
+  const deletedIds = new Set(
+    mutations.filter((m) => m.action === "delete").map((m) => m.id),
+  );
+
   for (const id of result.applied) {
     await database.pendingMutations.where("id").equals(id).delete();
+    if (deletedIds.has(id)) {
+      await database.tasks.delete(id);
+      continue;
+    }
     const task = await database.tasks.get(id);
     if (task) {
       await database.tasks.put({ ...task, syncStatus: "synced" });
@@ -118,13 +144,10 @@ export async function updateTaskLocal(task: Task): Promise<void> {
 }
 
 export async function deleteTaskLocal(task: Task): Promise<void> {
-  const deleted = {
+  await enqueueMutation("delete", {
     ...task,
-    deleted: true,
     updatedAt: nowIso(),
-  };
-  await saveTaskLocally(deleted, "pending");
-  await enqueueMutation("delete", deleted);
+  });
   void syncAll();
 }
 

@@ -11,7 +11,7 @@ export default async function AddPage() {
       <header className="mb-6">
         <h1 className="text-2xl font-semibold text-foreground">Tambah</h1>
       </header>
-      <AddTaskForm userEmail={session.user.email} />
+      <AddTaskForm userEmail={session.user.email} type="todo" />
     </>
   );
 }

@@ -29,7 +29,7 @@ export function TaskList({
     (t) =>
       !t.deleted &&
       canViewTask(t, userEmail) &&
-      matchesVisibilityFilter(t, filter, userEmail),
+      matchesVisibilityFilter(t, filter),
   );
 
   if (mode === "today") {

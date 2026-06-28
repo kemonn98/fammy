@@ -13,17 +13,9 @@ export function canViewTask(task: Task, userEmail: string): boolean {
 export function matchesVisibilityFilter(
   task: Task,
   filter: VisibilityFilter,
-  userEmail: string,
 ): boolean {
-  if (filter === "all") return true;
   if (filter === "shared") return task.visibility === "shared";
-  if (filter === "mine") {
-    return (
-      task.assignee === userEmail ||
-      task.assignee === "both" ||
-      task.createdBy === userEmail
-    );
-  }
+  if (filter === "mine") return task.visibility === "private";
   return true;
 }
 

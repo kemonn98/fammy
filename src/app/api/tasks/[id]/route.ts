@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { getAllTasks, upsertTasks } from "@/lib/sheets/client";
+import { deleteTasks, getAllTasks, upsertTasks } from "@/lib/sheets/client";
 import { canViewTask } from "@/lib/tasks/filters";
 import { taskSchema, toTask } from "@/lib/tasks/validation";
 
@@ -68,12 +68,6 @@ export async function DELETE(_request: Request, context: RouteContext) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 
-  const deleted = {
-    ...existing,
-    deleted: true,
-    updatedAt: new Date().toISOString(),
-  };
-
-  await upsertTasks([deleted]);
-  return NextResponse.json(deleted);
+  await deleteTasks([id]);
+  return NextResponse.json({ ok: true, id });
 }

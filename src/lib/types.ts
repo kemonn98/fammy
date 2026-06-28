@@ -33,7 +33,7 @@ export type LocalTask = Task & {
   syncStatus: "synced" | "pending" | "conflict";
 };
 
-export type VisibilityFilter = "all" | "mine" | "shared";
+export type VisibilityFilter = "mine" | "shared";
 
 export interface PushSubscriptionRecord {
   id: string;

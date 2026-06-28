@@ -8,13 +8,11 @@ import { id as idLocale } from "date-fns/locale";
 import type { Task, TaskType, Visibility } from "@/lib/types";
 import { CATEGORIES } from "@/lib/tasks/filters";
 import { createTaskLocal } from "@/lib/sync/engine";
-import { createId, nowIso } from "@/lib/utils";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { cn, createId, nowIso } from "@/lib/utils";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {
@@ -28,10 +26,10 @@ import { TimeSelect } from "@/components/time-select";
 
 interface AddTaskFormProps {
   userEmail: string;
-  variant?: "inline" | "page" | "bar";
-  onSaved?: () => void;
-  defaultType?: TaskType;
+  visibility?: Visibility;
+  type?: TaskType;
   defaultDate?: string;
+  onSaved?: () => void;
 }
 
 const REPEAT_LABELS: Record<Task["repeat"], string> = {
@@ -44,19 +42,15 @@ const REPEAT_LABELS: Record<Task["repeat"], string> = {
 
 export function AddTaskForm({
   userEmail,
-  variant = "page",
-  onSaved,
-  defaultType = "todo",
+  visibility = "shared",
+  type = "todo",
   defaultDate = "",
+  onSaved,
 }: AddTaskFormProps) {
   const router = useRouter();
-  const isInline = variant === "inline";
-  const compact = variant === "inline" || variant === "bar";
-  const isEvent = defaultType === "event";
-  const type = defaultType;
+  const isEvent = type === "event";
 
   const [title, setTitle] = useState("");
-  const [visibility, setVisibility] = useState<Visibility>("shared");
   const [showMore, setShowMore] = useState(false);
   const [note, setNote] = useState("");
   const [category, setCategory] = useState("lainnya");
@@ -64,6 +58,7 @@ export function AddTaskForm({
   const [dateOpen, setDateOpen] = useState(false);
   const [dueTime, setDueTime] = useState("");
   const [repeat, setRepeat] = useState<Task["repeat"]>("none");
+  const [eventVisibility, setEventVisibility] = useState<Visibility>(visibility);
   const [saving, setSaving] = useState(false);
 
   const dueDateObj = dueDate
@@ -72,13 +67,13 @@ export function AddTaskForm({
 
   function reset() {
     setTitle("");
-    setVisibility("shared");
     setShowMore(false);
     setNote("");
     setCategory("lainnya");
     setDueDate(defaultDate);
     setDueTime("");
     setRepeat("none");
+    setEventVisibility(visibility);
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -91,7 +86,7 @@ export function AddTaskForm({
       title: title.trim(),
       note: isEvent ? note : "",
       type,
-      visibility,
+      visibility: isEvent ? eventVisibility : visibility,
       assignee: "both",
       createdBy: userEmail,
       dueDate: isEvent ? dueDate || null : null,
@@ -100,7 +95,7 @@ export function AddTaskForm({
       repeatInterval: isEvent && repeat === "custom" ? 14 : null,
       repeatUntil: null,
       priority: "medium",
-      category: isEvent ? category : "lainnya",
+      category: isEvent ? category : "",
       status: "active",
       completedAt: null,
       completedBy: null,
@@ -122,56 +117,52 @@ export function AddTaskForm({
     }
   }
 
-  const placeholder = isEvent
-    ? compact
-      ? "Tambah agenda..."
-      : "Apa acaranya?"
-    : compact
-      ? "Tambah tugas..."
-      : "Apa yang perlu dilakukan?";
+  const placeholder = isEvent ? "Tambah agenda..." : "Tambah tugas...";
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className={cn(
-        "space-y-4",
-        isInline && "rounded-xl bg-card p-4 ring-1 ring-foreground/10",
-      )}
-    >
-      {isEvent ? (
+    <form onSubmit={handleSubmit} className="space-y-2">
+      <div className="flex items-center gap-3 rounded-xl bg-card px-4 py-3.5 ring-1 ring-foreground/5 shadow-xs">
+        <span
+          aria-hidden
+          className="size-6 shrink-0 rounded-full border-2 border-muted-foreground/30"
+        />
+
+        <input
+          type="text"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          placeholder={placeholder}
+          className="min-w-0 flex-1 bg-transparent text-base font-medium text-foreground placeholder:text-muted-foreground/60 focus:outline-none"
+        />
+
+        <button
+          type="submit"
+          disabled={!title.trim() || saving}
+          aria-label={isEvent ? "Tambah agenda" : "Tambah tugas"}
+          className="grid size-8 shrink-0 place-items-center rounded-full bg-primary text-primary-foreground transition-opacity disabled:opacity-40"
+        >
+          <Plus className="size-5" />
+        </button>
+      </div>
+
+      {isEvent && (
         <>
-          <Input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder={placeholder}
-            className={cn(
-              "h-12 border-0 bg-transparent px-0 font-medium shadow-none focus-visible:ring-0",
-              compact ? "text-lg" : "text-2xl",
-            )}
-            autoFocus={!compact}
-          />
-
-          <div className="flex items-center justify-between gap-2">
-            <Button
-              type="button"
-              variant={showMore ? "secondary" : "outline"}
-              onClick={() => setShowMore(!showMore)}
-            >
-              Detail
-              <ChevronDown
-                className={cn("transition-transform", showMore && "rotate-180")}
-              />
-            </Button>
-
-            <Button type="submit" disabled={!title.trim() || saving}>
-              <Plus />
-              {saving ? "Menyimpan..." : compact ? "Tambah" : "Simpan"}
-            </Button>
-          </div>
+          <button
+            type="button"
+            onClick={() => setShowMore(!showMore)}
+            className="flex items-center gap-1 px-1 text-sm text-muted-foreground transition-colors hover:text-foreground"
+          >
+            More Details
+            <ChevronDown
+              className={cn(
+                "size-4 transition-transform",
+                showMore && "rotate-180",
+              )}
+            />
+          </button>
 
           {showMore && (
-            <div className="space-y-4 border-t border-border pt-4">
+            <div className="space-y-4 rounded-xl bg-card p-4 ring-1 ring-foreground/5">
               <div className="space-y-2">
                 <Label>Jam</Label>
                 <TimeSelect value={dueTime} onValueChange={setDueTime} />
@@ -234,22 +225,22 @@ export function AddTaskForm({
               <div className="flex items-center justify-between rounded-md bg-muted/60 px-4 py-3">
                 <div className="space-y-0.5">
                   <Label
-                    htmlFor="visibility-switch"
+                    htmlFor="event-visibility-switch"
                     className="text-sm font-medium"
                   >
                     Agenda bersama
                   </Label>
                   <p className="text-xs text-muted-foreground">
-                    {visibility === "shared"
+                    {eventVisibility === "shared"
                       ? "Terlihat oleh pasangan"
                       : "Hanya untuk kamu"}
                   </p>
                 </div>
                 <Switch
-                  id="visibility-switch"
-                  checked={visibility === "shared"}
+                  id="event-visibility-switch"
+                  checked={eventVisibility === "shared"}
                   onCheckedChange={(checked) =>
-                    setVisibility(checked ? "shared" : "private")
+                    setEventVisibility(checked ? "shared" : "private")
                   }
                 />
               </div>
@@ -289,28 +280,6 @@ export function AddTaskForm({
             </div>
           )}
         </>
-      ) : (
-        <div className="flex items-center gap-2">
-          <Input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder={placeholder}
-            className={cn(
-              "min-w-0 flex-1 border-0 bg-transparent px-0 font-medium shadow-none focus-visible:ring-0",
-              compact ? "h-11 text-lg" : "h-12 text-2xl",
-            )}
-            autoFocus={!compact}
-          />
-          <Button
-            type="submit"
-            disabled={!title.trim() || saving}
-            className="shrink-0"
-          >
-            <Plus />
-            {saving ? "..." : compact ? "Tambah" : "Simpan"}
-          </Button>
-        </div>
       )}
     </form>
   );
