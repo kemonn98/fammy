@@ -1,6 +1,15 @@
 import webpush from "web-push";
 import type { PushSubscriptionRecord } from "@/lib/types";
 
+export type PushSendResult = {
+  subscriptionId: string;
+  endpoint: string;
+  ok: boolean;
+  statusCode?: number;
+  expired?: boolean;
+  error?: string;
+};
+
 function configureWebPush() {
   const publicKey = process.env.VAPID_PUBLIC_KEY;
   const privateKey = process.env.VAPID_PRIVATE_KEY;
@@ -16,7 +25,7 @@ function configureWebPush() {
 export async function sendPushNotification(
   subscription: PushSubscriptionRecord,
   payload: { title: string; body: string; url?: string },
-): Promise<boolean> {
+): Promise<PushSendResult> {
   configureWebPush();
 
   try {
@@ -30,20 +39,47 @@ export async function sendPushNotification(
       },
       JSON.stringify(payload),
     );
-    return true;
+    return {
+      subscriptionId: subscription.id,
+      endpoint: subscription.endpoint,
+      ok: true,
+    };
   } catch (error) {
-    console.error("Push failed:", subscription.endpoint, error);
-    return false;
+    const statusCode =
+      error && typeof error === "object" && "statusCode" in error
+        ? Number((error as { statusCode: number }).statusCode)
+        : undefined;
+    const expired = statusCode === 410;
+    const message =
+      error instanceof Error ? error.message : "Push delivery failed";
+
+    console.error("Push failed:", subscription.endpoint, statusCode, error);
+
+    return {
+      subscriptionId: subscription.id,
+      endpoint: subscription.endpoint,
+      ok: false,
+      statusCode,
+      expired,
+      error: message,
+    };
   }
+}
+
+export async function sendPushToSubscriptions(
+  subscriptions: PushSubscriptionRecord[],
+  payload: { title: string; body: string; url?: string },
+): Promise<PushSendResult[]> {
+  return Promise.all(
+    subscriptions.map((sub) => sendPushNotification(sub, payload)),
+  );
 }
 
 export async function sendPushToAll(
   subscriptions: PushSubscriptionRecord[],
   payload: { title: string; body: string; url?: string },
 ): Promise<void> {
-  await Promise.all(
-    subscriptions.map((sub) => sendPushNotification(sub, payload)),
-  );
+  await sendPushToSubscriptions(subscriptions, payload);
 }
 
 export function getVapidPublicKey(): string {

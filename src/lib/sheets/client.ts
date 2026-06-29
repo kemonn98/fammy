@@ -169,6 +169,21 @@ export async function upsertPushSubscription(
   await writeTab(PUSH_TAB, data);
 }
 
+export async function deletePushSubscription(id: string): Promise<void> {
+  const rows = await readTab(PUSH_TAB);
+  const subs = rows
+    .map((row) => rowToPushSubscription(row))
+    .filter((s): s is PushSubscriptionRecord => s !== null);
+
+  const idx = subs.findIndex((s) => s.id === id);
+  if (idx < 0) return;
+
+  subs[idx] = { ...subs[idx], deleted: true };
+  const active = subs.filter((s) => !s.deleted);
+  const data = [getPushHeaders()[0], ...active.map(pushSubscriptionToRow)];
+  await writeTab(PUSH_TAB, data);
+}
+
 export async function getSettings(): Promise<Record<string, string>> {
   const rows = await readTab(SETTINGS_TAB);
   const settings: Record<string, string> = {};
