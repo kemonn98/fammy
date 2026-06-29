@@ -23,18 +23,11 @@ export async function notifyPartnerOfNewSharedTask(
   if (partnerSubs.length === 0) return;
 
   const isEvent = task.type === "event";
-  const title = isEvent ? "Agenda baru bersama" : "Tugas baru bersama";
-
-  let body = `Pasangan menambahkan: ${task.title}`;
-  if (isEvent && task.dueDate) {
-    body += task.dueTime
-      ? ` · ${task.dueDate} ${task.dueTime}`
-      : ` · ${task.dueDate}`;
-  }
+  const title = isEvent ? "New Event!" : "New Task!";
 
   const results = await sendPushToSubscriptions(partnerSubs, {
-    title: `Fammy — ${title}`,
-    body,
+    title,
+    body: task.title,
     url: isEvent ? "/agenda" : "/today",
   });
 
