@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { SwipeableTaskRow } from "@/components/swipeable-task-row";
 import { EditTaskDialog } from "@/components/edit-task-dialog";
+import { TaskDetailDialog } from "@/components/task-detail-dialog";
 
 interface TaskItemProps {
   task: Task;
@@ -29,6 +30,7 @@ export function TaskItem({
   onComplete,
   showDate = false,
 }: TaskItemProps) {
+  const [detailOpen, setDetailOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const done = task.status === "done";
 
@@ -67,7 +69,12 @@ export function TaskItem({
             className="mt-0.5 size-6 rounded-full"
           />
 
-          <div className="min-w-0 flex-1">
+          <button
+            type="button"
+            onClick={() => setDetailOpen(true)}
+            className="min-w-0 flex-1 text-left"
+            aria-label={`Lihat detail: ${task.title}`}
+          >
             <p
               className={cn(
                 "truncate font-medium text-foreground",
@@ -94,7 +101,7 @@ export function TaskItem({
               )}
               {showDate && task.dueDate && <span>{task.dueDate}</span>}
             </div>
-          </div>
+          </button>
 
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -128,6 +135,14 @@ export function TaskItem({
           </DropdownMenu>
         </div>
       </SwipeableTaskRow>
+
+      <TaskDetailDialog
+        task={task}
+        open={detailOpen}
+        onOpenChange={setDetailOpen}
+        canComplete={!done && !!userEmail}
+        onComplete={handleComplete}
+      />
 
       <EditTaskDialog
         key={`${task.id}-${task.updatedAt}`}
