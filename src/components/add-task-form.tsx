@@ -8,7 +8,8 @@ import { id as idLocale } from "date-fns/locale";
 import type { Task, TaskType, Visibility } from "@/lib/types";
 import { CATEGORIES } from "@/lib/tasks/filters";
 import { createTaskLocal } from "@/lib/sync/engine";
-import { cn, createId, capitalizeWords, nowIso } from "@/lib/utils";
+import { cn, createId, nowIso } from "@/lib/utils";
+import { useCapitalizedInput } from "@/hooks/use-capitalized-input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
@@ -51,6 +52,7 @@ export function AddTaskForm({
   const isEvent = type === "event";
 
   const [title, setTitle] = useState("");
+  const titleInput = useCapitalizedInput<HTMLInputElement>(title, setTitle);
   const [showMore, setShowMore] = useState(false);
   const [note, setNote] = useState("");
   const [category, setCategory] = useState("lainnya");
@@ -130,9 +132,10 @@ export function AddTaskForm({
 
         <div className="min-w-0 flex-1">
           <input
+            ref={titleInput.ref}
             type="text"
             value={title}
-            onChange={(e) => setTitle(capitalizeWords(e.target.value))}
+            onChange={titleInput.onChange}
             placeholder={placeholder}
             className="w-full bg-transparent text-base font-medium text-foreground placeholder:text-muted-foreground/60 focus:outline-none"
           />

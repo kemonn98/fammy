@@ -29,7 +29,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { capitalizeWords, cn } from "@/lib/utils";
+import { cn } from "@/lib/utils";
+import { useCapitalizedInput } from "@/hooks/use-capitalized-input";
 
 const REPEAT_LABELS: Record<Task["repeat"], string> = {
   none: "Tidak berulang",
@@ -51,6 +52,7 @@ export function EditTaskDialog({
   onOpenChange,
 }: EditTaskDialogProps) {
   const [title, setTitle] = useState(task?.title ?? "");
+  const titleInput = useCapitalizedInput<HTMLInputElement>(title, setTitle);
   const [visibility, setVisibility] = useState<Task["visibility"]>(
     task?.visibility ?? "shared",
   );
@@ -103,8 +105,9 @@ export function EditTaskDialog({
               <Label htmlFor="edit-title">Judul</Label>
               <Input
                 id="edit-title"
+                ref={titleInput.ref}
                 value={title}
-                onChange={(e) => setTitle(capitalizeWords(e.target.value))}
+                onChange={titleInput.onChange}
                 autoFocus
               />
             </div>

@@ -45,7 +45,7 @@ export function TodayPageClient({ userEmail }: TodayPageClientProps) {
 
   return (
     <div className="space-y-6">
-      <div className="space-y-4">
+      <div className="space-y-2">
         <VisibilityToggle
           value={filter}
           onChange={setFilter}
