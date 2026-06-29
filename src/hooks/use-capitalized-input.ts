@@ -3,7 +3,7 @@
 import { useLayoutEffect, useRef } from "react";
 
 /**
- * Capitalizes the first letter of each word, but only for characters that were
+ * Capitalizes only the very first letter of the field, and only when it was
  * just typed (insertion). Deleting or editing existing text never re-applies
  * capitalization, so e.g. removing the leading "T" from "Tesk Awal" leaves
  * "esk Awal" untouched. The caret position is preserved after the update.
@@ -27,20 +27,14 @@ export function useCapitalizedInput<T extends HTMLInputElement>(
     const cursor = e.target.selectionStart ?? nextValue.length;
     caret.current = cursor;
 
-    // Only capitalize when characters were inserted (typing forward), and only
-    // within the inserted range. Deletions/edits are left as-is.
+    // Only capitalize the first character of the field, and only when it was
+    // just inserted (typing forward). Deletions/edits are left as-is.
     if (nextValue.length > value.length) {
-      const insertStart = Math.max(0, cursor - (nextValue.length - value.length));
-      const chars = [...nextValue];
-      for (let i = insertStart; i < cursor; i++) {
-        const prev = chars[i - 1];
-        const isWordStart = i === 0 || (prev !== undefined && /\s/.test(prev));
-        if (isWordStart && chars[i]) {
-          chars[i] = chars[i].toUpperCase();
-        }
+      const insertStart = cursor - (nextValue.length - value.length);
+      if (insertStart === 0 && nextValue[0]) {
+        setValue(nextValue[0].toUpperCase() + nextValue.slice(1));
+        return;
       }
-      setValue(chars.join(""));
-      return;
     }
 
     setValue(nextValue);
