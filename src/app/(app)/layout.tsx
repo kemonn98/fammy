@@ -1,5 +1,7 @@
+import Link from "next/link";
+import { Settings } from "lucide-react";
 import { redirect } from "next/navigation";
-import { auth, signOut } from "@/lib/auth";
+import { auth } from "@/lib/auth";
 import { AppShell } from "@/components/app-shell";
 import { SyncProvider } from "@/components/sync-provider";
 import { Button } from "@/components/ui/button";
@@ -19,21 +21,19 @@ export default async function AppLayout({
           <span className="text-sm font-semibold tracking-tight text-primary">
             Fammy
           </span>
-          <form
-            action={async () => {
-              "use server";
-              await signOut({ redirectTo: "/login" });
-            }}
-          >
+          <div className="flex items-center gap-1">
             <Button
-              type="submit"
+              type="button"
               variant="ghost"
               size="sm"
               className="text-muted-foreground"
+              asChild
             >
-              Keluar
+              <Link href="/settings" aria-label="Pengaturan">
+                <Settings className="size-5" />
+              </Link>
             </Button>
-          </form>
+          </div>
         </div>
         <AppShell userEmail={session.user.email}>{children}</AppShell>
       </div>

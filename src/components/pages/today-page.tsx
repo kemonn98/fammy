@@ -11,9 +11,6 @@ import {
 import { VisibilityToggle } from "@/components/visibility-toggle";
 import { TaskList } from "@/components/task-list";
 import { AddTaskForm } from "@/components/add-task-form";
-import { IosInstallPrompt } from "@/components/ios-install-prompt";
-import { PushPermissionBanner } from "@/components/push-permission-banner";
-import { PushTestButton } from "@/components/push-test-button";
 import { useTasks } from "@/hooks/use-tasks";
 
 interface TodayPageClientProps {
@@ -67,12 +64,6 @@ export function TodayPageClient({ userEmail }: TodayPageClientProps) {
           visibility={filter === "shared" ? "shared" : "private"}
           onSaved={() => undefined}
         />
-      </div>
-
-      <div className="space-y-3 pt-2">
-        <IosInstallPrompt />
-        <PushPermissionBanner />
-        <PushTestButton />
       </div>
     </div>
   );
