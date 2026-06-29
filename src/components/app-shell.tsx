@@ -1,0 +1,107 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
+import { TodayPageClient } from "@/components/pages/today-page";
+import { AgendaPageClient } from "@/components/pages/agenda-page";
+import { AllPageClient } from "@/components/pages/all-page";
+import { BottomNav, type BottomNavHref } from "@/components/bottom-nav";
+
+const TAB_PATHS: BottomNavHref[] = ["/today", "/agenda", "/all"];
+
+function pathToTab(pathname: string): BottomNavHref | null {
+  return TAB_PATHS.find((path) => pathname === path) ?? null;
+}
+
+function TodayHeader() {
+  return (
+    <header className="mb-5">
+      <h1 className="text-2xl font-semibold text-foreground">Hari Ini</h1>
+      <p className="text-sm text-muted-foreground">
+        {new Date().toLocaleDateString("id-ID", {
+          weekday: "long",
+          day: "numeric",
+          month: "long",
+        })}
+      </p>
+    </header>
+  );
+}
+
+function AgendaHeader() {
+  return (
+    <header className="mb-5">
+      <h1 className="text-2xl font-semibold text-foreground">Agenda</h1>
+      <p className="text-sm text-muted-foreground">Jadwal & acara bersama</p>
+    </header>
+  );
+}
+
+function AllHeader() {
+  return (
+    <header className="mb-6">
+      <h1 className="text-2xl font-semibold text-foreground">Semua</h1>
+    </header>
+  );
+}
+
+interface AppShellProps {
+  children: React.ReactNode;
+  userEmail: string;
+}
+
+export function AppShell({ children, userEmail }: AppShellProps) {
+  const pathname = usePathname();
+  const [activeTab, setActiveTab] = useState<BottomNavHref | null>(() =>
+    pathToTab(pathname),
+  );
+  const activeTabRef = useRef(activeTab);
+
+  useEffect(() => {
+    const nextTab = pathToTab(pathname);
+    activeTabRef.current = nextTab;
+    setActiveTab(nextTab);
+  }, [pathname]);
+
+  useEffect(() => {
+    const onPopState = () => {
+      const nextTab = pathToTab(window.location.pathname);
+      activeTabRef.current = nextTab;
+      setActiveTab(nextTab);
+    };
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, []);
+
+  function navigateTab(href: BottomNavHref) {
+    if (href === activeTabRef.current) return;
+    activeTabRef.current = href;
+    setActiveTab(href);
+    window.history.pushState(null, "", href);
+  }
+
+  if (!activeTab) return <>{children}</>;
+
+  return (
+    <>
+      <div className={activeTab === "/today" ? "block" : "hidden"}>
+        <TodayHeader />
+        <TodayPageClient userEmail={userEmail} />
+      </div>
+
+      <div className={activeTab === "/agenda" ? "block" : "hidden"}>
+        <AgendaHeader />
+        <AgendaPageClient userEmail={userEmail} />
+      </div>
+
+      <div className={activeTab === "/all" ? "block" : "hidden"}>
+        <AllHeader />
+        <AllPageClient userEmail={userEmail} />
+      </div>
+
+      <div className="fixed inset-x-0 bottom-0 z-50">
+        <BottomNav activeHref={activeTab} onNavigate={navigateTab} />
+      </div>
+    </>
+  );
+}

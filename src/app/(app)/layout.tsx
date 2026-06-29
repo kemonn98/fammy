@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { auth, signOut } from "@/lib/auth";
-import { BottomNav } from "@/components/bottom-nav";
+import { AppShell } from "@/components/app-shell";
 import { SyncProvider } from "@/components/sync-provider";
 import { Button } from "@/components/ui/button";
 
@@ -10,7 +10,7 @@ export default async function AppLayout({
   children: React.ReactNode;
 }) {
   const session = await auth();
-  if (!session) redirect("/login");
+  if (!session?.user?.email) redirect("/login");
 
   return (
     <SyncProvider>
@@ -35,10 +35,7 @@ export default async function AppLayout({
             </Button>
           </form>
         </div>
-        {children}
-      </div>
-      <div className="fixed inset-x-0 bottom-0 z-50">
-        <BottomNav />
+        <AppShell userEmail={session.user.email}>{children}</AppShell>
       </div>
     </SyncProvider>
   );

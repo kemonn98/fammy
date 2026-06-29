@@ -107,7 +107,7 @@ export function SwipeableTaskRow({
     <div className="relative overflow-hidden rounded-xl">
       <div className="pointer-events-none absolute inset-0 flex">
         <div
-          className="flex items-center justify-start bg-primary px-4 text-primary-foreground"
+          className="flex items-center justify-start bg-gradient-to-r from-white/20 to-white/0 px-4 text-primary"
           style={{ width: MAX_DRAG, opacity: offset > 0 ? dragProgress : 0 }}
         >
           <Check className="size-5" />
@@ -115,7 +115,7 @@ export function SwipeableTaskRow({
         </div>
         <div className="flex-1" />
         <div
-          className="flex items-center justify-end bg-destructive px-4 text-white"
+          className="flex items-center justify-end bg-gradient-to-r from-destructive/0 to-destructive px-4 text-white"
           style={{
             width: MAX_DRAG,
             opacity: removing ? 1 : swipingLeft ? dragProgress : 0,

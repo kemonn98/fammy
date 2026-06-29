@@ -1,24 +1,23 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useSession } from "next-auth/react";
 import { format, isSameDay, parseISO, startOfDay } from "date-fns";
 import { id as idLocale } from "date-fns/locale";
-import type { Task, VisibilityFilter } from "@/lib/types";
+import type { Task } from "@/lib/types";
 import { completeTaskLocal } from "@/lib/sync/engine";
-import { canViewTask, matchesVisibilityFilter } from "@/lib/tasks/filters";
+import { canViewTask } from "@/lib/tasks/filters";
 import { useTasks } from "@/hooks/use-tasks";
-import { VisibilityToggle } from "@/components/visibility-toggle";
 import { TaskItem } from "@/components/task-item";
 import { AddTaskForm } from "@/components/add-task-form";
 import { AgendaCalendar } from "@/components/agenda-calendar";
 import { Button } from "@/components/ui/button";
 
-export function AgendaPageClient() {
-  const { data: session } = useSession();
+interface AgendaPageClientProps {
+  userEmail: string;
+}
+
+export function AgendaPageClient({ userEmail }: AgendaPageClientProps) {
   const tasks = useTasks();
-  const userEmail = session?.user?.email ?? "";
-  const [filter, setFilter] = useState<VisibilityFilter>("mine");
   const [selectedDate, setSelectedDate] = useState<Date>(startOfDay(new Date()));
   const [month, setMonth] = useState<Date>(startOfDay(new Date()));
 
@@ -30,10 +29,9 @@ export function AgendaPageClient() {
           t.type === "event" &&
           t.dueDate &&
           t.status !== "skipped" &&
-          canViewTask(t, userEmail) &&
-          matchesVisibilityFilter(t, filter),
+          canViewTask(t, userEmail),
       ),
-    [tasks, userEmail, filter],
+    [tasks, userEmail],
   );
 
   const eventsByDate = useMemo(() => {
@@ -76,8 +74,6 @@ export function AgendaPageClient() {
 
   return (
     <div className="space-y-6">
-      <VisibilityToggle value={filter} onChange={setFilter} />
-
       <div className="rounded-xl bg-card p-2 ring-1 ring-foreground/10">
         <AgendaCalendar
           mode="single"
@@ -131,7 +127,6 @@ export function AgendaPageClient() {
           key={format(selectedDate, "yyyy-MM-dd")}
           userEmail={userEmail}
           type="event"
-          visibility={filter === "shared" ? "shared" : "private"}
           defaultDate={format(selectedDate, "yyyy-MM-dd")}
           onSaved={() => undefined}
         />

@@ -1,9 +1,13 @@
 "use client";
 
-import { useState } from "react";
-import { useSession } from "next-auth/react";
+import { useMemo, useState } from "react";
 import type { Task, VisibilityFilter } from "@/lib/types";
 import { completeTaskLocal } from "@/lib/sync/engine";
+import {
+  canViewTask,
+  isActiveTask,
+  isDueTodayOrNoDate,
+} from "@/lib/tasks/filters";
 import { VisibilityToggle } from "@/components/visibility-toggle";
 import { TaskList } from "@/components/task-list";
 import { AddTaskForm } from "@/components/add-task-form";
@@ -11,11 +15,28 @@ import { IosInstallPrompt } from "@/components/ios-install-prompt";
 import { PushPermissionBanner } from "@/components/push-permission-banner";
 import { useTasks } from "@/hooks/use-tasks";
 
-export function TodayPageClient() {
-  const { data: session } = useSession();
+interface TodayPageClientProps {
+  userEmail: string;
+}
+
+export function TodayPageClient({ userEmail }: TodayPageClientProps) {
   const tasks = useTasks();
-  const [filter, setFilter] = useState<VisibilityFilter>("mine");
-  const userEmail = session?.user?.email ?? "";
+  const [filter, setFilter] = useState<VisibilityFilter>("shared");
+
+  const visibilityCounts = useMemo(() => {
+    const todayTodos = tasks.filter(
+      (t) =>
+        !t.deleted &&
+        canViewTask(t, userEmail) &&
+        isActiveTask(t) &&
+        t.type === "todo" &&
+        isDueTodayOrNoDate(t),
+    );
+    return {
+      shared: todayTodos.filter((t) => t.visibility === "shared").length,
+      mine: todayTodos.filter((t) => t.visibility === "private").length,
+    };
+  }, [tasks, userEmail]);
 
   async function handleComplete(task: Task) {
     if (!userEmail) return;
@@ -25,7 +46,11 @@ export function TodayPageClient() {
   return (
     <div className="space-y-6">
       <div className="space-y-4">
-        <VisibilityToggle value={filter} onChange={setFilter} />
+        <VisibilityToggle
+          value={filter}
+          onChange={setFilter}
+          counts={visibilityCounts}
+        />
 
         <TaskList
           tasks={tasks}

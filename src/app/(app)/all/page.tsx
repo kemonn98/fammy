@@ -1,17 +1,3 @@
-import { redirect } from "next/navigation";
-import { auth } from "@/lib/auth";
-import { AllPageClient } from "@/components/pages/all-page";
-
-export default async function AllPage() {
-  const session = await auth();
-  if (!session?.user?.email) redirect("/login");
-
-  return (
-    <>
-      <header className="mb-6">
-        <h1 className="text-2xl font-semibold text-foreground">Semua</h1>
-      </header>
-      <AllPageClient />
-    </>
-  );
+export default function AllPage() {
+  return null;
 }

@@ -1,16 +1,17 @@
 "use client";
 
-import { useSession } from "next-auth/react";
 import type { Task } from "@/lib/types";
 import { completeTaskLocal } from "@/lib/sync/engine";
 import { TaskList } from "@/components/task-list";
 import { AddTaskForm } from "@/components/add-task-form";
 import { useTasks } from "@/hooks/use-tasks";
 
-export function AllPageClient() {
-  const { data: session } = useSession();
+interface AllPageClientProps {
+  userEmail: string;
+}
+
+export function AllPageClient({ userEmail }: AllPageClientProps) {
   const tasks = useTasks();
-  const userEmail = session?.user?.email ?? "";
 
   async function handleComplete(task: Task) {
     if (!userEmail) return;

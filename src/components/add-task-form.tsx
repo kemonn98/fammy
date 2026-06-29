@@ -8,7 +8,7 @@ import { id as idLocale } from "date-fns/locale";
 import type { Task, TaskType, Visibility } from "@/lib/types";
 import { CATEGORIES } from "@/lib/tasks/filters";
 import { createTaskLocal } from "@/lib/sync/engine";
-import { cn, createId, nowIso } from "@/lib/utils";
+import { cn, createId, capitalizeWords, nowIso } from "@/lib/utils";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
@@ -132,7 +132,7 @@ export function AddTaskForm({
           <input
             type="text"
             value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            onChange={(e) => setTitle(capitalizeWords(e.target.value))}
             placeholder={placeholder}
             className="w-full bg-transparent text-base font-medium text-foreground placeholder:text-muted-foreground/60 focus:outline-none"
           />

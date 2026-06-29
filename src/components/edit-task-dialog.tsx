@@ -29,7 +29,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { cn } from "@/lib/utils";
+import { capitalizeWords, cn } from "@/lib/utils";
 
 const REPEAT_LABELS: Record<Task["repeat"], string> = {
   none: "Tidak berulang",
@@ -104,7 +104,7 @@ export function EditTaskDialog({
               <Input
                 id="edit-title"
                 value={title}
-                onChange={(e) => setTitle(e.target.value)}
+                onChange={(e) => setTitle(capitalizeWords(e.target.value))}
                 autoFocus
               />
             </div>
