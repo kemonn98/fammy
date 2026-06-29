@@ -5,11 +5,6 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-/** Capitalize the first letter of each word (e.g. "uji coba" → "Uji Coba"). */
-export function capitalizeWords(value: string): string {
-  return value.replace(/(^\w|\s\w)/g, (match) => match.toUpperCase());
-}
-
 export function createId(): string {
   return crypto.randomUUID();
 }
