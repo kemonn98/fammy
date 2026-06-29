@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { getAllTasks } from "@/lib/sheets/client";
 import { canViewTask } from "@/lib/tasks/filters";
+import { notifyPartnerOfNewSharedTask } from "@/lib/push/notify-shared-task";
 import { taskSchema, toTask } from "@/lib/tasks/validation";
 
 export async function GET() {
@@ -38,6 +39,14 @@ export async function POST(request: Request) {
 
     const { upsertTasks } = await import("@/lib/sheets/client");
     await upsertTasks([task]);
+
+    if (task.visibility === "shared") {
+      try {
+        await notifyPartnerOfNewSharedTask(task, session.user.email);
+      } catch (error) {
+        console.error("Partner notify failed:", task.id, error);
+      }
+    }
 
     return NextResponse.json(task, { status: 201 });
   } catch (error) {

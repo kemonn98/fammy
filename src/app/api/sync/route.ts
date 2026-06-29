@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { deleteTasks, getAllTasks, upsertTasks } from "@/lib/sheets/client";
 import { canViewTask } from "@/lib/tasks/filters";
+import { notifyPartnerOfNewSharedTask } from "@/lib/push/notify-shared-task";
 import type { PendingMutation, SyncResponse, Task } from "@/lib/types";
 
 export async function POST(request: Request) {
@@ -19,6 +20,7 @@ export async function POST(request: Request) {
     const conflicts: string[] = [];
     const upserts: Task[] = [];
     const deleteIds: string[] = [];
+    const newSharedTasks: Task[] = [];
     const userEmail = session.user.email;
 
     for (const mutation of mutations) {
@@ -45,12 +47,28 @@ export async function POST(request: Request) {
         };
         byId.set(payload.id, updated);
         upserts.push(updated);
+
+        if (
+          action === "create" &&
+          !serverTask &&
+          updated.visibility === "shared"
+        ) {
+          newSharedTasks.push(updated);
+        }
       }
       applied.push(payload.id);
     }
 
     if (deleteIds.length > 0) await deleteTasks(deleteIds);
     if (upserts.length > 0) await upsertTasks(upserts);
+
+    for (const task of newSharedTasks) {
+      try {
+        await notifyPartnerOfNewSharedTask(task, userEmail);
+      } catch (error) {
+        console.error("Partner notify failed:", task.id, error);
+      }
+    }
 
     const visible = Array.from(byId.values()).filter((t) =>
       canViewTask(t, userEmail),
