@@ -2,7 +2,11 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { deleteTasks, getAllTasks, upsertTasks } from "@/lib/sheets/client";
 import { canViewTask } from "@/lib/tasks/filters";
-import { notifyPartnerOfNewSharedTask } from "@/lib/push/notify-shared-task";
+import {
+  notifyPartnerOfCompletedSharedTask,
+  notifyPartnerOfNewSharedTask,
+  wasSharedTaskJustCompleted,
+} from "@/lib/push/notify-shared-task";
 import type { PendingMutation, SyncResponse, Task } from "@/lib/types";
 
 export async function POST(request: Request) {
@@ -21,6 +25,7 @@ export async function POST(request: Request) {
     const upserts: Task[] = [];
     const deleteIds: string[] = [];
     const newSharedTasks: Task[] = [];
+    const completedSharedTasks: Task[] = [];
     const userEmail = session.user.email;
 
     for (const mutation of mutations) {
@@ -55,6 +60,10 @@ export async function POST(request: Request) {
         ) {
           newSharedTasks.push(updated);
         }
+
+        if (wasSharedTaskJustCompleted(serverTask, updated, userEmail)) {
+          completedSharedTasks.push(updated);
+        }
       }
       applied.push(payload.id);
     }
@@ -67,6 +76,14 @@ export async function POST(request: Request) {
         await notifyPartnerOfNewSharedTask(task, userEmail);
       } catch (error) {
         console.error("Partner notify failed:", task.id, error);
+      }
+    }
+
+    for (const task of completedSharedTasks) {
+      try {
+        await notifyPartnerOfCompletedSharedTask(task, userEmail);
+      } catch (error) {
+        console.error("Partner complete notify failed:", task.id, error);
       }
     }
 

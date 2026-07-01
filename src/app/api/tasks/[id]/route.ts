@@ -2,6 +2,10 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { deleteTasks, getAllTasks, upsertTasks } from "@/lib/sheets/client";
 import { canViewTask } from "@/lib/tasks/filters";
+import {
+  notifyPartnerOfCompletedSharedTask,
+  wasSharedTaskJustCompleted,
+} from "@/lib/push/notify-shared-task";
 import { taskSchema, toTask } from "@/lib/tasks/validation";
 
 type RouteContext = { params: Promise<{ id: string }> };
@@ -44,6 +48,15 @@ export async function PATCH(request: Request, context: RouteContext) {
     task.updatedAt = new Date().toISOString();
 
     await upsertTasks([task]);
+
+    if (wasSharedTaskJustCompleted(existing, task, session.user.email)) {
+      try {
+        await notifyPartnerOfCompletedSharedTask(task, session.user.email);
+      } catch (error) {
+        console.error("Partner complete notify failed:", task.id, error);
+      }
+    }
+
     return NextResponse.json(task);
   } catch (error) {
     console.error(error);
