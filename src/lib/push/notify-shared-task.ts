@@ -41,7 +41,7 @@ export async function notifyPartnerOfNewSharedTask(
 
   const isEvent = task.type === "event";
   await notifyPartner(creatorEmail, {
-    title: isEvent ? "New Event!" : "New Task!",
+    title: isEvent ? "Event baru ditambahkan!" : "Task baru ditambahkan!",
     body: task.title,
     url: taskUrl(task),
   });
@@ -55,9 +55,8 @@ export async function notifyPartnerOfCompletedSharedTask(
   if (task.status !== "done") return;
   if (task.completedBy !== completedByEmail) return;
 
-  const isEvent = task.type === "event";
   await notifyPartner(completedByEmail, {
-    title: isEvent ? "Event Done!" : "Task Done!",
+    title: "Task sudah selesai!",
     body: task.title,
     url: taskUrl(task),
   });
