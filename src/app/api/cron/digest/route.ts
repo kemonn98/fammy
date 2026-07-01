@@ -52,18 +52,18 @@ export async function GET(request: NextRequest) {
 
       const lines: string[] = [];
       if (todosToday.length > 0) {
-        lines.push(`${todosToday.length} todo hari ini`);
+        lines.push(`${todosToday.length} todo today`);
         todosToday.slice(0, 3).forEach((t) => lines.push(`• ${t.title}`));
       }
       if (upcomingEvents.length > 0) {
-        lines.push(`${upcomingEvents.length} agenda mendatang`);
+        lines.push(`${upcomingEvents.length} upcoming events`);
         upcomingEvents.slice(0, 3).forEach((t) => lines.push(`• ${t.title}`));
       }
 
       if (lines.length === 0) continue;
 
       await sendPushToAll(userSubs, {
-        title: "Fammy — Ringkasan hari ini",
+        title: "Fammy — Today's summary",
         body: lines.join("\n"),
         url: "/today",
       });

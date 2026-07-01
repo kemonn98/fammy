@@ -47,17 +47,17 @@ export function isEventTodayOrTomorrow(task: Task): boolean {
 export function groupTasksByDate(tasks: Task[]): Record<string, Task[]> {
   const groups: Record<string, Task[]> = {
     "To Do": [],
-    "Hari ini": [],
-    Besok: [],
+    Today: [],
+    Tomorrow: [],
     Agenda: [],
-    Selesai: [],
+    Done: [],
   };
 
   const today = startOfDay(new Date());
 
   for (const task of tasks) {
     if (task.status === "done" || task.status === "skipped") {
-      groups["Selesai"].push(task);
+      groups["Done"].push(task);
       continue;
     }
 
@@ -69,13 +69,13 @@ export function groupTasksByDate(tasks: Task[]): Record<string, Task[]> {
     try {
       const date = parseISO(task.dueDate);
       if (isToday(date)) {
-        groups["Hari ini"].push(task);
+        groups["Today"].push(task);
       } else if (isTomorrow(date)) {
-        groups["Besok"].push(task);
+        groups["Tomorrow"].push(task);
       } else if (date >= today) {
         groups["Agenda"].push(task);
       } else {
-        groups["Hari ini"].push(task);
+        groups["Today"].push(task);
       }
     } catch {
       groups["To Do"].push(task);
@@ -86,7 +86,7 @@ export function groupTasksByDate(tasks: Task[]): Record<string, Task[]> {
 }
 
 export const CATEGORIES = [
-  // Tugas harian
+  // Daily tasks
   "belanja",
   "rumah",
   "kebersihan",
@@ -96,7 +96,7 @@ export const CATEGORIES = [
   "kerja",
   "anak",
   "hewan",
-  // Agenda & acara
+  // Events
   "acara",
   "pertemuan",
   "kesehatan",

@@ -10,7 +10,18 @@ Format: **MAJOR.MINOR.PATCH**
 | **MINOR** | Fitur baru |
 | **PATCH** | Perbaikan bug, polish UI, penyesuaian kecil |
 
-Versi aktif aplikasi: **`1.8.1`** (`src/lib/version.ts`)
+Versi aktif aplikasi: **`1.9.0`** (`src/lib/version.ts`)
+
+---
+
+## [1.9.0] — 2026-07-01
+
+**MINOR** — English UI
+
+- Translate all user-facing copy from Indonesian to English (nav, forms, dialogs, settings, login, errors, push)
+- Switch `date-fns` locale to `enUS`; set `lang="en"` on root HTML
+- Add `src/lib/tasks/labels.ts` for English category & repeat labels (sheet slugs unchanged)
+- Update `README.md` and `AGENTS.md` for English UI
 
 ---
 

@@ -71,7 +71,7 @@ export function TaskItem({
             checked={done}
             disabled={done || !userEmail || readOnly}
             onCheckedChange={handleComplete}
-            aria-label="Tandai selesai"
+            aria-label="Mark complete"
             className="mt-0.5 size-6 rounded-full"
           />
 
@@ -79,7 +79,7 @@ export function TaskItem({
             type="button"
             onClick={() => setDetailOpen(true)}
             className="min-w-0 flex-1 text-left"
-            aria-label={`Lihat detail: ${task.title}`}
+            aria-label={`View details: ${task.title}`}
           >
             <p
               className={cn(
@@ -122,7 +122,7 @@ export function TaskItem({
                 variant="ghost"
                 size="icon-sm"
                 className="mt-0.5 shrink-0 text-muted-foreground"
-                aria-label="Opsi tugas"
+                aria-label="Task options"
               >
                 <MoreVertical className="size-5" />
               </Button>
@@ -141,7 +141,7 @@ export function TaskItem({
                 onClick={handleDelete}
               >
                 <Trash2 />
-                Hapus
+                Delete
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

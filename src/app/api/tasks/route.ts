@@ -20,7 +20,7 @@ export async function GET() {
   } catch (error) {
     console.error(error);
     return NextResponse.json(
-      { error: "Gagal memuat tugas" },
+      { error: "Failed to load tasks" },
       { status: 500 },
     );
   }
@@ -52,7 +52,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error(error);
     return NextResponse.json(
-      { error: "Gagal membuat tugas" },
+      { error: "Failed to create task" },
       { status: 500 },
     );
   }

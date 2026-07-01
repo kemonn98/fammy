@@ -4,9 +4,10 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { CalendarIcon, ChevronDown, Plus } from "lucide-react";
 import { format, parse } from "date-fns";
-import { id as idLocale } from "date-fns/locale";
+import { enUS } from "date-fns/locale";
 import type { Task, TaskType, Visibility } from "@/lib/types";
 import { CATEGORIES } from "@/lib/tasks/filters";
+import { REPEAT_LABELS, getCategoryLabel } from "@/lib/tasks/labels";
 import {
   DEFAULT_REMIND_BEFORE_MINUTES,
   REMIND_BEFORE_OPTIONS,
@@ -36,14 +37,6 @@ interface AddTaskFormProps {
   defaultDate?: string;
   onSaved?: () => void;
 }
-
-const REPEAT_LABELS: Record<Task["repeat"], string> = {
-  none: "Tidak berulang",
-  daily: "Harian",
-  weekly: "Mingguan",
-  monthly: "Bulanan",
-  custom: "Tiap 14 hari",
-};
 
 export function AddTaskForm({
   userEmail,
@@ -129,13 +122,13 @@ export function AddTaskForm({
       }
     } catch (error) {
       console.error("Failed to save task:", error);
-      setSaveError("Gagal menyimpan. Coba lagi.");
+      setSaveError("Failed to save. Try again.");
     } finally {
       setSaving(false);
     }
   }
 
-  const placeholder = isEvent ? "Tambah agenda..." : "Tambah tugas...";
+  const placeholder = isEvent ? "Add event..." : "Add task...";
 
   return (
     <form onSubmit={handleSubmit} className="space-y-2">
@@ -180,7 +173,7 @@ export function AddTaskForm({
         <button
           type="submit"
           disabled={!title.trim() || saving}
-          aria-label={isEvent ? "Tambah agenda" : "Tambah tugas"}
+          aria-label={isEvent ? "Add event" : "Add task"}
           className="mt-0.5 grid size-8 shrink-0 place-items-center rounded-full bg-primary text-primary-foreground transition-opacity disabled:opacity-40"
         >
           <Plus className="size-5" />
@@ -192,12 +185,12 @@ export function AddTaskForm({
           {showMore && (
             <div className="space-y-4 rounded-xl bg-card p-4 ring-1 ring-foreground/5">
               <div className="space-y-2">
-                <Label>Jam</Label>
+                <Label>Time</Label>
                 <TimeSelect value={dueTime} onValueChange={setDueTime} />
               </div>
 
               <div className="space-y-2">
-                <Label>Pengingat</Label>
+                <Label>Reminder</Label>
                 <Select
                   value={String(remindBefore)}
                   onValueChange={(v) => setRemindBefore(Number(v))}
@@ -218,13 +211,13 @@ export function AddTaskForm({
                 </Select>
                 <p className="text-xs text-muted-foreground">
                   {dueTime
-                    ? "Notifikasi push dikirim sebelum waktu acara."
-                    : "Isi jam acara agar pengingat bisa dikirim."}
+                    ? "Push notification sent before the event time."
+                    : "Set an event time to enable reminders."}
                 </p>
               </div>
 
               <div className="space-y-2">
-                <Label>Tanggal</Label>
+                <Label>Date</Label>
                 <Popover open={dateOpen} onOpenChange={setDateOpen}>
                   <PopoverTrigger asChild>
                     <Button
@@ -238,9 +231,9 @@ export function AddTaskForm({
                       <CalendarIcon />
                       {dueDateObj
                         ? format(dueDateObj, "EEEE, d MMMM yyyy", {
-                            locale: idLocale,
+                            locale: enUS,
                           })
-                        : "Pilih tanggal"}
+                        : "Pick a date"}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent
@@ -254,7 +247,7 @@ export function AddTaskForm({
                         setDueDate(date ? format(date, "yyyy-MM-dd") : "");
                         setDateOpen(false);
                       }}
-                      locale={idLocale}
+                      locale={enUS}
                       autoFocus
                     />
                   </PopoverContent>
@@ -262,15 +255,15 @@ export function AddTaskForm({
               </div>
 
               <div className="space-y-2">
-                <Label>Kategori</Label>
+                <Label>Category</Label>
                 <Select value={category} onValueChange={setCategory}>
-                  <SelectTrigger className="w-full capitalize">
+                  <SelectTrigger className="w-full">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     {CATEGORIES.map((c) => (
-                      <SelectItem key={c} value={c} className="capitalize">
-                        {c}
+                      <SelectItem key={c} value={c}>
+                        {getCategoryLabel(c)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -283,12 +276,12 @@ export function AddTaskForm({
                     htmlFor="event-visibility-switch"
                     className="text-sm font-medium"
                   >
-                    Agenda bersama
+                    Shared event
                   </Label>
                   <p className="text-xs text-muted-foreground">
                     {eventVisibility === "shared"
-                      ? "Terlihat oleh pasangan"
-                      : "Hanya untuk kamu"}
+                      ? "Visible to partner"
+                      : "Only you"}
                   </p>
                 </div>
                 <Switch
@@ -301,7 +294,7 @@ export function AddTaskForm({
               </div>
 
               <div className="space-y-2">
-                <Label>Pengulangan</Label>
+                <Label>Repeat</Label>
                 <Select
                   value={repeat}
                   onValueChange={(v) => setRepeat(v as Task["repeat"])}
@@ -322,12 +315,12 @@ export function AddTaskForm({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="note">Catatan</Label>
+                <Label htmlFor="note">Notes</Label>
                 <Textarea
                   id="note"
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
-                  placeholder="Tambahkan detail..."
+                  placeholder="Add details..."
                   rows={2}
                   className="resize-none"
                 />
@@ -339,7 +332,7 @@ export function AddTaskForm({
                 className="w-full"
               >
                 <Plus />
-                {saving ? "Menyimpan..." : "Tambah agenda"}
+                {saving ? "Saving..." : "Add event"}
               </Button>
             </div>
           )}

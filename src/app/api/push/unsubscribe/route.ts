@@ -17,7 +17,7 @@ export async function POST(request: Request) {
 
     if (!endpoint) {
       return NextResponse.json(
-        { error: "Endpoint diperlukan" },
+        { error: "Endpoint is required" },
         { status: 400 },
       );
     }
@@ -36,7 +36,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error(error);
     return NextResponse.json(
-      { error: "Gagal menghapus subscription" },
+      { error: "Failed to remove subscription" },
       { status: 500 },
     );
   }

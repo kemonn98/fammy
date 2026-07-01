@@ -14,7 +14,7 @@ export async function POST() {
   } catch (error) {
     console.error(error);
     return NextResponse.json(
-      { error: "Gagal menghapus semua tugas" },
+      { error: "Failed to delete all tasks" },
       { status: 500 },
     );
   }

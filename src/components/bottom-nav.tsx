@@ -7,9 +7,9 @@ import { cn } from "@/lib/utils";
 export type BottomNavHref = "/today" | "/agenda" | "/all";
 
 const links: { href: BottomNavHref; label: string; icon: LucideIcon }[] = [
-  { href: "/today", label: "Hari Ini", icon: ListTodo },
+  { href: "/today", label: "Today", icon: ListTodo },
   { href: "/agenda", label: "Agenda", icon: CalendarDays },
-  { href: "/all", label: "Semua", icon: List },
+  { href: "/all", label: "All", icon: List },
 ];
 
 interface BottomNavProps {

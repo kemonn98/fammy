@@ -3,9 +3,10 @@
 import { useState } from "react";
 import { CalendarIcon } from "lucide-react";
 import { format, parse } from "date-fns";
-import { id as idLocale } from "date-fns/locale";
+import { enUS } from "date-fns/locale";
 import type { Task } from "@/lib/types";
 import { CATEGORIES } from "@/lib/tasks/filters";
+import { REPEAT_LABELS, getCategoryLabel } from "@/lib/tasks/labels";
 import { updateTaskLocal } from "@/lib/sync/engine";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,14 +32,6 @@ import {
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import { useCapitalizedInput } from "@/hooks/use-capitalized-input";
-
-const REPEAT_LABELS: Record<Task["repeat"], string> = {
-  none: "Tidak berulang",
-  daily: "Harian",
-  weekly: "Mingguan",
-  monthly: "Bulanan",
-  custom: "Tiap 14 hari",
-};
 
 interface EditTaskDialogProps {
   task: Task | null;
@@ -96,13 +89,13 @@ export function EditTaskDialog({
         <form onSubmit={handleSave}>
           <DialogHeader>
             <DialogTitle>
-              {isEvent ? "Edit agenda" : "Edit tugas"}
+              {isEvent ? "Edit event" : "Edit task"}
             </DialogTitle>
           </DialogHeader>
 
           <div className="space-y-4 py-2">
             <div className="space-y-2">
-              <Label htmlFor="edit-title">Judul</Label>
+              <Label htmlFor="edit-title">Title</Label>
               <Input
                 id="edit-title"
                 ref={titleInput.ref}
@@ -115,12 +108,12 @@ export function EditTaskDialog({
             {isEvent ? (
               <>
                 <div className="space-y-2">
-                  <Label>Jam</Label>
+                  <Label>Time</Label>
                   <TimeSelect value={dueTime} onValueChange={setDueTime} />
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Tanggal</Label>
+                  <Label>Date</Label>
                   <Popover open={dateOpen} onOpenChange={setDateOpen}>
                     <PopoverTrigger asChild>
                       <Button
@@ -134,9 +127,9 @@ export function EditTaskDialog({
                         <CalendarIcon />
                         {dueDateObj
                           ? format(dueDateObj, "EEEE, d MMMM yyyy", {
-                              locale: idLocale,
+                              locale: enUS,
                             })
-                          : "Pilih tanggal"}
+                          : "Pick a date"}
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent
@@ -150,7 +143,7 @@ export function EditTaskDialog({
                           setDueDate(date ? format(date, "yyyy-MM-dd") : "");
                           setDateOpen(false);
                         }}
-                        locale={idLocale}
+                        locale={enUS}
                         autoFocus
                       />
                     </PopoverContent>
@@ -158,15 +151,15 @@ export function EditTaskDialog({
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Kategori</Label>
+                  <Label>Category</Label>
                   <Select value={category} onValueChange={setCategory}>
-                    <SelectTrigger className="w-full capitalize">
+                    <SelectTrigger className="w-full">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
                       {CATEGORIES.map((c) => (
-                        <SelectItem key={c} value={c} className="capitalize">
-                          {c}
+                        <SelectItem key={c} value={c}>
+                          {getCategoryLabel(c)}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -174,7 +167,7 @@ export function EditTaskDialog({
                 </div>
 
                 <div className="space-y-2">
-                  <Label>Pengulangan</Label>
+                  <Label>Repeat</Label>
                   <Select
                     value={repeat}
                     onValueChange={(v) => setRepeat(v as Task["repeat"])}
@@ -195,7 +188,7 @@ export function EditTaskDialog({
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="edit-note">Catatan</Label>
+                  <Label htmlFor="edit-note">Notes</Label>
                   <Textarea
                     id="edit-note"
                     value={note}
@@ -210,12 +203,12 @@ export function EditTaskDialog({
             <div className="flex items-center justify-between rounded-md bg-muted/60 px-4 py-3">
               <div className="space-y-0.5">
                 <Label htmlFor="edit-visibility" className="text-sm font-medium">
-                  {isEvent ? "Agenda bersama" : "Tugas bersama"}
+                  {isEvent ? "Shared event" : "Shared task"}
                 </Label>
                 <p className="text-xs text-muted-foreground">
                   {visibility === "shared"
-                    ? "Terlihat oleh pasangan"
-                    : "Hanya untuk kamu"}
+                    ? "Visible to partner"
+                    : "Only you"}
                 </p>
               </div>
               <Switch
@@ -234,10 +227,10 @@ export function EditTaskDialog({
               variant="outline"
               onClick={() => onOpenChange(false)}
             >
-              Batal
+              Cancel
             </Button>
             <Button type="submit" disabled={!title.trim() || saving}>
-              {saving ? "Menyimpan..." : "Simpan"}
+              {saving ? "Saving..." : "Save"}
             </Button>
           </DialogFooter>
         </form>

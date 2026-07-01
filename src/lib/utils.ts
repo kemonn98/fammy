@@ -103,9 +103,9 @@ export function assigneeLabel(
   assignee: string,
   currentEmail: string,
 ): string {
-  if (assignee === "both") return "Keduanya";
-  if (assignee === currentEmail) return "Kamu";
+  if (assignee === "both") return "Both";
+  if (assignee === currentEmail) return "You";
   const partner = getPartnerEmail(currentEmail);
-  if (partner && assignee === partner) return "Pasangan";
+  if (partner && assignee === partner) return "Partner";
   return assignee;
 }

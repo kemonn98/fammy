@@ -35,7 +35,7 @@ export default async function AppLayout({
               className="text-muted-foreground"
               asChild
             >
-              <Link href="/settings" aria-label="Pengaturan">
+              <Link href="/settings" aria-label="Settings">
                 <Settings className="size-5" />
               </Link>
             </Button>

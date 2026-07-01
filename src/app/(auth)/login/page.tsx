@@ -11,7 +11,7 @@ export default function LoginPage({
       <div className="w-full max-w-sm text-center">
         <h1 className="text-3xl font-semibold text-primary">Fammy</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Todo & agenda untuk kita berdua
+          Todo & agenda for the two of us
         </p>
 
         <LoginError searchParams={searchParams} />
@@ -25,7 +25,7 @@ export default function LoginPage({
         >
           <Button type="submit" size="lg" className="h-12 w-full text-sm">
             <GoogleIcon />
-            Masuk dengan Google
+            Sign in with Google
           </Button>
         </form>
       </div>
@@ -43,7 +43,7 @@ async function LoginError({
 
   return (
     <p className="mt-4 rounded-xl bg-rose-50 px-4 py-3 text-sm text-rose-700">
-      Email tidak diizinkan. Hubungi admin.
+      Email not allowed. Contact admin.
     </p>
   );
 }

@@ -111,7 +111,7 @@ export function SwipeableTaskRow({
           style={{ width: MAX_DRAG, opacity: offset > 0 ? dragProgress : 0 }}
         >
           <Check className="size-5" />
-          <span className="ml-2 text-sm font-medium">Selesai</span>
+          <span className="ml-2 text-sm font-medium">Done</span>
         </div>
         <div className="flex-1" />
         <div
@@ -121,7 +121,7 @@ export function SwipeableTaskRow({
             opacity: removing ? 1 : swipingLeft ? dragProgress : 0,
           }}
         >
-          <span className="mr-2 text-sm font-medium">Hapus</span>
+          <span className="mr-2 text-sm font-medium">Delete</span>
           <Trash2 className="size-5" />
         </div>
       </div>

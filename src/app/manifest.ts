@@ -4,7 +4,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "Fammy",
     short_name: "Fammy",
-    description: "Todo & agenda untuk pasangan",
+    description: "Todo & agenda for couples",
     start_url: "/today",
     display: "standalone",
     background_color: "#fafaf9",

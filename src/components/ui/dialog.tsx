@@ -74,7 +74,7 @@ function DialogContent({
               size="icon-sm"
             >
               <X />
-              <span className="sr-only">Tutup</span>
+              <span className="sr-only">Close</span>
             </Button>
           </DialogPrimitive.Close>
         )}

@@ -20,7 +20,7 @@ interface TimeSelectProps {
 export function TimeSelect({
   value,
   onValueChange,
-  placeholder = "Pilih jam",
+  placeholder = "Pick time",
 }: TimeSelectProps) {
   return (
     <Select
@@ -31,7 +31,7 @@ export function TimeSelect({
         <SelectValue placeholder={placeholder} />
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value={NONE}>Tanpa jam</SelectItem>
+        <SelectItem value={NONE}>No time</SelectItem>
         {TIME_OPTIONS.map((time) => (
           <SelectItem key={time} value={time}>
             {time}

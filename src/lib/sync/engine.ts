@@ -87,7 +87,7 @@ export async function pullFromServer(signal?: AbortSignal): Promise<Task[]> {
     "/api/tasks",
     { credentials: "include", signal },
   );
-  if (!res.ok) throw new Error("Gagal memuat data");
+  if (!res.ok) throw new Error("Failed to load data");
   const tasks: Task[] = await res.json();
   await mergeServerTasks(tasks);
   await getDb().meta.put({ key: "lastPullAt", value: nowIso() });
@@ -109,7 +109,7 @@ export async function pushToServer(
     signal,
   });
 
-  if (!res.ok) throw new Error("Gagal sinkronisasi");
+  if (!res.ok) throw new Error("Sync failed");
 
   const result: SyncResponse = await res.json();
   await mergeServerTasks(result.tasks);

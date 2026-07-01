@@ -64,12 +64,12 @@ export function SettingsPageClient({ userEmail }: SettingsPageClientProps) {
       if (checked) {
         const result = await subscribeToPush();
         if (!result.ok) {
-          setMessage(result.error ?? "Gagal mengaktifkan notifikasi.");
+          setMessage(result.error ?? "Failed to enable notifications.");
         }
       } else {
         const result = await unsubscribeFromPush();
         if (!result.ok) {
-          setMessage(result.error ?? "Gagal menonaktifkan notifikasi.");
+          setMessage(result.error ?? "Failed to disable notifications.");
         }
       }
       await refresh();
@@ -85,7 +85,7 @@ export function SettingsPageClient({ userEmail }: SettingsPageClientProps) {
       if (!subscribed) {
         const sub = await subscribeToPush();
         if (!sub.ok) {
-          setMessage(sub.error ?? "Aktifkan notifikasi dulu.");
+          setMessage(sub.error ?? "Enable notifications first.");
           return;
         }
         await refresh();
@@ -109,7 +109,7 @@ export function SettingsPageClient({ userEmail }: SettingsPageClientProps) {
         const body = (await res.json().catch(() => null)) as {
           error?: string;
         } | null;
-        throw new Error(body?.error ?? "Gagal menghapus semua tugas.");
+        throw new Error(body?.error ?? "Failed to delete all tasks.");
       }
       await clearLocalTaskData();
       setResetOpen(false);
@@ -120,7 +120,7 @@ export function SettingsPageClient({ userEmail }: SettingsPageClientProps) {
       setResetError(
         error instanceof Error
           ? error.message
-          : "Gagal menghapus semua tugas.",
+          : "Failed to delete all tasks.",
       );
     } finally {
       setResetting(false);
@@ -128,12 +128,12 @@ export function SettingsPageClient({ userEmail }: SettingsPageClientProps) {
   }
 
   const pushHint = !pushSupported()
-    ? "Browser ini tidak mendukung push notifikasi."
+    ? "This browser does not support push notifications."
     : !standalone && isIos()
-      ? "Pasang Fammy ke Home Screen dulu agar notifikasi bisa aktif."
+      ? "Add Fammy to your Home Screen first to enable notifications."
       : permission === "denied"
-        ? "Notifikasi diblokir di iPhone. Buka Settings → Fammy → Notifications."
-        : "Ringkasan harian & pengingat event agenda.";
+        ? "Notifications are blocked. Open Settings → Fammy → Notifications."
+        : "Daily digest & event reminders.";
 
   return (
     <div className="space-y-6">
@@ -142,15 +142,15 @@ export function SettingsPageClient({ userEmail }: SettingsPageClientProps) {
         className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
       >
         <ArrowLeft className="size-4" />
-        Kembali
+        Back
       </Link>
 
       <header>
-        <h1 className="text-2xl font-semibold text-foreground">Pengaturan</h1>
+        <h1 className="text-2xl font-semibold text-foreground">Settings</h1>
       </header>
 
       <section className="space-y-2 rounded-xl bg-card p-4 ring-1 ring-foreground/5">
-        <h2 className="text-sm font-medium text-foreground">Akun</h2>
+        <h2 className="text-sm font-medium text-foreground">Account</h2>
         <p className="text-sm text-muted-foreground">{userEmail}</p>
       </section>
 
@@ -159,23 +159,23 @@ export function SettingsPageClient({ userEmail }: SettingsPageClientProps) {
           <Share className="mt-0.5 size-5 shrink-0 text-primary" />
           <div className="space-y-1">
             <p className="text-sm font-medium text-foreground">
-              Pasang ke Home Screen
+              Add to Home Screen
             </p>
             <p className="text-xs text-muted-foreground">
-              Tap Share di Safari → Tambah ke Layar Utama. Diperlukan untuk
-              notifikasi di iPhone.
+              Tap Share in Safari → Add to Home Screen. Required for
+              notifications on iPhone.
             </p>
           </div>
         </section>
       )}
 
       <section className="space-y-4 rounded-xl bg-card p-4 ring-1 ring-foreground/5">
-        <h2 className="text-sm font-medium text-foreground">Notifikasi</h2>
+        <h2 className="text-sm font-medium text-foreground">Notifications</h2>
 
         <div className="flex items-center justify-between gap-4">
           <div className="min-w-0 space-y-0.5">
             <Label htmlFor="push-toggle" className="text-sm font-medium">
-              Push notifikasi
+              Push notifications
             </Label>
             <p className="text-xs text-muted-foreground">{pushHint}</p>
           </div>
@@ -190,10 +190,10 @@ export function SettingsPageClient({ userEmail }: SettingsPageClientProps) {
         <div className="flex items-center justify-between gap-3 border-t border-border pt-4">
           <div className="min-w-0">
             <p className="text-sm font-medium text-foreground">
-              Tes notifikasi
+              Test notification
             </p>
             <p className="text-xs text-muted-foreground">
-              Kirim notifikasi instan ke device ini
+              Send an instant notification to this device
             </p>
           </div>
           <Button
@@ -204,7 +204,7 @@ export function SettingsPageClient({ userEmail }: SettingsPageClientProps) {
             disabled={testing || loading}
           >
             <BellRing className="size-4" />
-            {testing ? "..." : "Kirim"}
+            {testing ? "..." : "Send"}
           </Button>
         </div>
 
@@ -216,8 +216,8 @@ export function SettingsPageClient({ userEmail }: SettingsPageClientProps) {
       <section className="space-y-3 rounded-xl bg-card p-4 ring-1 ring-foreground/5">
         <h2 className="text-sm font-medium text-foreground">Data</h2>
         <p className="text-xs text-muted-foreground">
-          Hapus semua todo dan agenda dari database. Berlaku untuk kamu dan
-          pasangan.
+          Delete all todos and events from the database. Applies to you and
+          your partner.
         </p>
         <Button
           type="button"
@@ -229,7 +229,7 @@ export function SettingsPageClient({ userEmail }: SettingsPageClientProps) {
           }}
         >
           <Trash2 className="size-4" />
-          Hapus semua tugas
+          Delete all tasks
         </Button>
       </section>
 
@@ -241,14 +241,14 @@ export function SettingsPageClient({ userEmail }: SettingsPageClientProps) {
       >
         <DialogContent showCloseButton={!resetting}>
           <DialogHeader>
-            <DialogTitle>Hapus semua tugas?</DialogTitle>
+            <DialogTitle>Delete all tasks?</DialogTitle>
             <DialogDescription>
-              Semua todo dan agenda akan dihapus permanen dari database —
-              termasuk data pasangan. Tindakan ini{" "}
+              All todos and events will be permanently deleted from the database
+              — including your partner&apos;s data. This action{" "}
               <span className="font-medium text-foreground">
-                tidak bisa dipulihkan
+                cannot be undone
               </span>{" "}
-              dan data akan hilang selamanya.
+              and data will be lost forever.
             </DialogDescription>
           </DialogHeader>
 
@@ -265,7 +265,7 @@ export function SettingsPageClient({ userEmail }: SettingsPageClientProps) {
               disabled={resetting}
               onClick={() => setResetOpen(false)}
             >
-              Batal
+              Cancel
             </Button>
             <Button
               type="button"
@@ -273,7 +273,7 @@ export function SettingsPageClient({ userEmail }: SettingsPageClientProps) {
               disabled={resetting}
               onClick={() => void handleResetTasks()}
             >
-              {resetting ? "Menghapus..." : "Ya, hapus selamanya"}
+              {resetting ? "Deleting..." : "Yes, delete forever"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -286,7 +286,7 @@ export function SettingsPageClient({ userEmail }: SettingsPageClientProps) {
         onClick={() => void signOut({ redirectTo: "/login" })}
       >
         <LogOut className="size-4" />
-        Keluar
+        Log out
       </Button>
     </div>
   );

@@ -6,7 +6,7 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 # Fammy — Agent Cheat Sheet
 
-PWA todo & agenda untuk **dua orang** (pasangan). UI **Bahasa Indonesia**. Offline-first; **Google Sheets** = database production. Baca `README.md` untuk setup/deploy; baca `VERSION_LOG.md` untuk changelog.
+PWA todo & agenda for **two people** (a couple). UI **English**. Offline-first; **Google Sheets** = production database. Read `README.md` for setup/deploy; read `VERSION_LOG.md` for changelog.
 
 **Versi aktif:** `src/lib/version.ts` → `APP_VERSION` (tampil di header sebagai capsule).
 
@@ -17,7 +17,7 @@ PWA todo & agenda untuk **dua orang** (pasangan). UI **Bahasa Indonesia**. Offli
 - Jangan tambah database lain (Postgres, Firebase, dll.) — Sheets + Dexie offline cache saja.
 - Jangan ubah model auth: Google OAuth + `ALLOWED_EMAILS` allowlist (maks. 2 email).
 - Task mutations untuk client: **selalu** lewat `src/lib/sync/engine.ts` (`createTaskLocal`, `updateTaskLocal`, dll.), bukan fetch langsung ke API dari UI kecuali ada alasan kuat.
-- UI copy untuk pengguna: **Bahasa Indonesia**.
+- UI copy for users: **English**.
 - Minimize scope — ikuti pola file yang sudah ada; jangan over-engineer.
 
 ---
@@ -50,7 +50,7 @@ src/
     sync/fetch.ts     # fetchWithTimeout
     sync/db-timeout.ts# IndexedDB timeout + recoverDb
     sheets/client.ts  # getAllTasks, upsertTasks, deleteTasks, resetAllTasks
-    tasks/filters.ts  # canViewTask, groupTasksByDate (To Do, Hari ini, Besok, Agenda, Selesai)
+    tasks/filters.ts  # canViewTask, groupTasksByDate (To Do, Today, Tomorrow, Agenda, Done)
     recurring.ts      # advance parent, virtual calendar, buildAgendaDayTasks
     push/             # send, client, notify-shared-task
     version.ts        # APP_VERSION
@@ -88,12 +88,12 @@ assignee: "both" | userEmail      // shared → "both"; private → creator emai
 
 | Tab | Perilaku |
 |-----|----------|
-| **Hari Ini** | Todo hari ini; filter Shared/Personal + badge; form tambah todo |
-| **Agenda** | Kalender + list per hari; form tambah event; repeat & remindBefore di More Details |
-| **Semua** | Semua task; grup **To Do** (tanpa tanggal), Hari ini, Besok, **Agenda** (mendatang), Selesai — **tanpa** form tambah |
-| **Pengaturan** | Push toggle, tes push, reset semua tugas (modal), keluar di bawah |
+| **Today** | Today's todos; Shared/Personal filter + badge; add todo form |
+| **Agenda** | Calendar + per-day list; add event form; repeat & remindBefore in More Details |
+| **All** | All tasks; groups **To Do** (no date), Today, Tomorrow, **Agenda** (upcoming), Done — **no** add form |
+| **Settings** | Push toggle, test push, reset all tasks (modal), log out at bottom |
 
-- **Tidak ada** judul halaman besar (Hari Ini / Agenda / Semua) — hanya bottom nav + header `Fammy` + versi.
+- **No** large page titles (Today / Agenda / All) — only bottom nav + `Fammy` header + version.
 - Navigasi tab: `AppShell` + `history.pushState` — jangan full page navigation untuk ganti tab.
 - Task: swipe complete/delete, tap → `TaskDetailDialog`.
 - Capitalize judul: `useCapitalizedInput` — hanya huruf pertama, jangan rusak caret.

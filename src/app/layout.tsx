@@ -14,7 +14,7 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: "Fammy",
-  description: "Todo & agenda untuk pasangan",
+  description: "Todo & agenda for couples",
   applicationName: "Fammy",
   appleWebApp: {
     capable: true,
@@ -40,7 +40,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="id" className={cn("dark h-full", inter.variable, "font-sans", geist.variable)}>
+    <html lang="en" className={cn("dark h-full", inter.variable, "font-sans", geist.variable)}>
       <body
         suppressHydrationWarning
         className="min-h-full bg-background font-sans text-foreground antialiased"

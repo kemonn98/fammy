@@ -61,7 +61,7 @@ export async function PATCH(request: Request, context: RouteContext) {
   } catch (error) {
     console.error(error);
     return NextResponse.json(
-      { error: "Gagal memperbarui tugas" },
+      { error: "Failed to update task" },
       { status: 500 },
     );
   }

@@ -27,7 +27,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error(error);
     return NextResponse.json(
-      { error: "Gagal menyimpan subscription" },
+      { error: "Failed to save subscription" },
       { status: 500 },
     );
   }

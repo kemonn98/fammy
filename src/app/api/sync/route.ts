@@ -101,7 +101,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error(error);
     return NextResponse.json(
-      { error: "Gagal sinkronisasi" },
+      { error: "Sync failed" },
       { status: 500 },
     );
   }

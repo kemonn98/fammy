@@ -23,7 +23,7 @@ export async function POST() {
         {
           ok: false,
           error:
-            "Belum ada subscription. Aktifkan notifikasi dulu dari banner di Hari Ini.",
+            "No subscription yet. Enable notifications from Settings first.",
           sent: 0,
           failed: 0,
           results: [],
@@ -33,8 +33,8 @@ export async function POST() {
     }
 
     const results = await sendPushToSubscriptions(userSubs, {
-      title: "Fammy — Tes notifikasi",
-      body: "Notifikasi berhasil dikirim! Tap untuk buka app.",
+      title: "Fammy — Test notification",
+      body: "Notification sent successfully! Tap to open the app.",
       url: "/today",
     });
 
@@ -62,7 +62,7 @@ export async function POST() {
   } catch (error) {
     console.error(error);
     return NextResponse.json(
-      { error: "Gagal mengirim tes notifikasi" },
+      { error: "Failed to send test notification" },
       { status: 500 },
     );
   }

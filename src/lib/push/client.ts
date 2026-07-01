@@ -60,14 +60,14 @@ export async function getPushStatus(): Promise<PushStatus> {
 
 export async function subscribeToPush(): Promise<{ ok: boolean; error?: string }> {
   if (!pushSupported()) {
-    return { ok: false, error: "Browser tidak mendukung push notifikasi." };
+    return { ok: false, error: "This browser does not support push notifications." };
   }
 
   if (!isStandalone()) {
     return {
       ok: false,
       error:
-        "Buka Fammy dari ikon Home Screen (bukan Safari) untuk mengaktifkan notifikasi.",
+        "Open Fammy from the Home Screen icon (not Safari) to enable notifications.",
     };
   }
 
@@ -79,18 +79,18 @@ export async function subscribeToPush(): Promise<{ ok: boolean; error?: string }
     return {
       ok: false,
       error:
-        "Notifikasi diblokir di iPhone. Buka Settings → Fammy → Notifications, lalu aktifkan.",
+        "Notifications are blocked on this device. Open Settings → Fammy → Notifications and enable them.",
     };
   }
 
   const permission = await Notification.requestPermission();
   if (permission !== "granted") {
-    return { ok: false, error: "Izin notifikasi belum diberikan." };
+    return { ok: false, error: "Notification permission was not granted." };
   }
 
   const res = await fetch("/api/push/vapid-public-key");
   const { publicKey } = await res.json();
-  if (!publicKey) return { ok: false, error: "VAPID key tidak tersedia." };
+  if (!publicKey) return { ok: false, error: "VAPID key is not available." };
 
   const sub = await reg.pushManager.subscribe({
     userVisibleOnly: true,
@@ -105,7 +105,7 @@ export async function subscribeToPush(): Promise<{ ok: boolean; error?: string }
   });
 
   if (!saveRes.ok) {
-    return { ok: false, error: "Gagal menyimpan subscription ke server." };
+    return { ok: false, error: "Failed to save subscription on the server." };
   }
 
   return { ok: true };
@@ -116,7 +116,7 @@ export async function unsubscribeFromPush(): Promise<{
   error?: string;
 }> {
   if (!pushSupported()) {
-    return { ok: false, error: "Browser tidak mendukung push notifikasi." };
+    return { ok: false, error: "This browser does not support push notifications." };
   }
 
   const reg = await navigator.serviceWorker.ready;
@@ -147,16 +147,16 @@ export async function sendTestPush(): Promise<{
   const data = await res.json();
 
   if (!res.ok) {
-    return { ok: false, message: data.error ?? "Gagal mengirim notifikasi." };
+    return { ok: false, message: data.error ?? "Failed to send notification." };
   }
 
   if (data.sent > 0) {
     return {
       ok: true,
-      message: `Terkirim ke ${data.sent} device. Cek notifikasi di layar.`,
+      message: `Sent to ${data.sent} device(s). Check your notifications.`,
     };
   }
 
-  const detail = data.results?.[0]?.error ?? "Push ditolak oleh server.";
-  return { ok: false, message: `Gagal: ${detail}` };
+  const detail = data.results?.[0]?.error ?? "Push rejected by server.";
+  return { ok: false, message: `Failed: ${detail}` };
 }

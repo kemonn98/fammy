@@ -1,7 +1,7 @@
 "use client";
 
 import { format, parseISO } from "date-fns";
-import { id as idLocale } from "date-fns/locale";
+import { enUS } from "date-fns/locale";
 import {
   Calendar,
   Bell,
@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import type { Task } from "@/lib/types";
 import { formatRemindBefore } from "@/lib/tasks/remind-before";
+import { REPEAT_LABELS, getCategoryLabel } from "@/lib/tasks/labels";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -21,14 +22,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
-
-const REPEAT_LABELS: Record<Task["repeat"], string> = {
-  none: "Tidak berulang",
-  daily: "Harian",
-  weekly: "Mingguan",
-  monthly: "Bulanan",
-  custom: "Tiap 14 hari",
-};
 
 function MetaItem({
   icon: Icon,
@@ -69,7 +62,7 @@ export function TaskDetailDialog({
   if (task.dueDate) {
     try {
       formattedDate = format(parseISO(task.dueDate), "EEEE, d MMMM yyyy", {
-        locale: idLocale,
+        locale: enUS,
       });
     } catch {
       formattedDate = task.dueDate;
@@ -111,8 +104,8 @@ export function TaskDetailDialog({
             )}
 
             {isEvent && task.category && (
-              <span className="inline-flex items-center rounded-full bg-muted px-2.5 py-1 text-xs capitalize text-muted-foreground">
-                {task.category}
+              <span className="inline-flex items-center rounded-full bg-muted px-2.5 py-1 text-xs text-muted-foreground">
+                {getCategoryLabel(task.category)}
               </span>
             )}
 
@@ -124,7 +117,7 @@ export function TaskDetailDialog({
 
             {done && (
               <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-1 text-xs font-medium text-primary">
-                Selesai
+                Done
               </span>
             )}
           </div>
@@ -132,7 +125,7 @@ export function TaskDetailDialog({
           {isEvent && task.note.trim() && (
             <div className="rounded-lg bg-muted/50 px-3 py-2.5">
               <p className="mb-1 text-xs font-medium text-muted-foreground">
-                Catatan
+                Notes
               </p>
               <p className="text-sm break-words whitespace-pre-wrap text-foreground">
                 {task.note}
@@ -152,7 +145,7 @@ export function TaskDetailDialog({
               }}
             >
               <Check />
-              Tandai selesai
+              Mark complete
             </Button>
           </DialogFooter>
         ) : null}

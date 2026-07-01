@@ -24,7 +24,7 @@ export async function fetchWithTimeout(
     return await fetch(input, { ...init, signal: controller.signal });
   } catch (error) {
     if (error instanceof Error && error.name === "AbortError") {
-      throw new Error("Permintaan jaringan habis waktu");
+      throw new Error("Network request timed out");
     }
     throw error;
   } finally {

@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { format, isSameDay, startOfDay } from "date-fns";
-import { id as idLocale } from "date-fns/locale";
+import { enUS } from "date-fns/locale";
 import type { Task } from "@/lib/types";
 import { completeTaskLocal } from "@/lib/sync/engine";
 import { canViewTask } from "@/lib/tasks/filters";
@@ -63,7 +63,7 @@ export function AgendaPageClient({ userEmail }: AgendaPageClientProps) {
           onSelect={(date: Date | undefined) => date && setSelectedDate(date)}
           month={month}
           onMonthChange={setMonth}
-          locale={idLocale}
+          locale={enUS}
           eventsByDate={eventsByDate}
         />
       </div>
@@ -71,7 +71,7 @@ export function AgendaPageClient({ userEmail }: AgendaPageClientProps) {
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <h2 className="text-sm font-medium text-foreground">
-            {format(selectedDate, "EEEE, d MMMM yyyy", { locale: idLocale })}
+            {format(selectedDate, "EEEE, d MMMM yyyy", { locale: enUS })}
           </h2>
           {!isToday && (
             <Button
@@ -84,7 +84,7 @@ export function AgendaPageClient({ userEmail }: AgendaPageClientProps) {
                 setMonth(today);
               }}
             >
-              Hari ini
+              Today
             </Button>
           )}
         </div>
