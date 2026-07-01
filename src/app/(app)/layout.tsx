@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Settings } from "lucide-react";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
@@ -20,6 +21,14 @@ export default async function AppLayout({
       <div className="mx-auto min-h-screen max-w-lg px-4 pb-28 pt-6">
         <div className="mb-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
+            <Image
+              src="/fammy-profile.png"
+              alt="Fammy"
+              width={28}
+              height={28}
+              className="size-7 rounded-md"
+              priority
+            />
             <span className="text-sm font-semibold tracking-tight text-primary">
               Fammy
             </span>

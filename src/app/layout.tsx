@@ -16,6 +16,13 @@ export const metadata: Metadata = {
   title: "Fammy",
   description: "Todo & agenda for couples",
   applicationName: "Fammy",
+  icons: {
+    icon: [
+      { url: "/favicon.png", sizes: "32x32", type: "image/png" },
+      { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
+    ],
+    apple: "/icons/apple-touch-icon.png",
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",

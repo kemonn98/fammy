@@ -2,7 +2,7 @@
 
 Minimal PWA for couple todo & agenda. English UI, offline-first, Google Sheets as database.
 
-**Current version:** `1.9.0` (badge in app header) — full history in [VERSION_LOG.md](./VERSION_LOG.md).
+**Current version:** `1.9.1` (badge in app header) — full history in [VERSION_LOG.md](./VERSION_LOG.md).
 
 ## Features
 

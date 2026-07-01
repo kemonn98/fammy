@@ -1,4 +1,5 @@
 import { signIn } from "@/lib/auth";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 
 export default function LoginPage({
@@ -9,7 +10,15 @@ export default function LoginPage({
   return (
     <div className="flex min-h-screen flex-col items-center justify-center px-6">
       <div className="w-full max-w-sm text-center">
-        <h1 className="text-3xl font-semibold text-primary">Fammy</h1>
+        <Image
+          src="/fammy-profile.png"
+          alt="Fammy"
+          width={96}
+          height={96}
+          className="mx-auto size-24 rounded-2xl"
+          priority
+        />
+        <h1 className="mt-4 text-3xl font-semibold text-primary">Fammy</h1>
         <p className="mt-2 text-sm text-muted-foreground">
           Todo & agenda for the two of us
         </p>
