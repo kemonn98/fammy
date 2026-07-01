@@ -1,12 +1,12 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { format, isSameDay, parseISO, startOfDay } from "date-fns";
+import { format, isSameDay, startOfDay } from "date-fns";
 import { id as idLocale } from "date-fns/locale";
 import type { Task } from "@/lib/types";
 import { completeTaskLocal } from "@/lib/sync/engine";
 import { canViewTask } from "@/lib/tasks/filters";
-import { buildAgendaEventsByDate } from "@/lib/recurring";
+import { buildAgendaEventsByDate, buildAgendaDayTasks } from "@/lib/recurring";
 import { useTasks } from "@/hooks/use-tasks";
 import { TaskItem } from "@/components/task-item";
 import { AddTaskForm } from "@/components/add-task-form";
@@ -42,22 +42,7 @@ export function AgendaPageClient({ userEmail }: AgendaPageClientProps) {
   );
 
   const dayEvents = useMemo(
-    () =>
-      events
-        .filter((e) => {
-          try {
-            return isSameDay(parseISO(e.dueDate as string), selectedDate);
-          } catch {
-            return false;
-          }
-        })
-        .sort((a, b) => {
-          const byTime = (a.dueTime ?? "99:99").localeCompare(
-            b.dueTime ?? "99:99",
-          );
-          if (byTime !== 0) return byTime;
-          return a.updatedAt.localeCompare(b.updatedAt);
-        }),
+    () => buildAgendaDayTasks(events, selectedDate),
     [events, selectedDate],
   );
 
@@ -106,13 +91,16 @@ export function AgendaPageClient({ userEmail }: AgendaPageClientProps) {
 
         {dayEvents.length > 0 && (
           <div className="space-y-2">
-            {dayEvents.map((task) => (
+            {dayEvents.map(({ key, task, isVirtualPreview }) => (
               <TaskItem
-                key={task.id}
+                key={key}
                 task={task}
                 userEmail={userEmail}
+                isVirtualPreview={isVirtualPreview}
                 onComplete={
-                  task.status === "active" ? handleComplete : undefined
+                  !isVirtualPreview && task.status === "active"
+                    ? handleComplete
+                    : undefined
                 }
               />
             ))}

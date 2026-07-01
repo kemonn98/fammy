@@ -15,6 +15,12 @@ import { nowIso, todayInAppTz, zonedDateTimeToUtcMs } from "@/lib/utils";
 
 const MAX_VIRTUAL_OCCURRENCES = 500;
 
+export type AgendaDayTask = {
+  key: string;
+  task: Task;
+  isVirtualPreview: boolean;
+};
+
 function startOfTodayInAppTz(): Date {
   return startOfDay(parseISO(todayInAppTz()));
 }
@@ -218,4 +224,52 @@ export function buildAgendaEventsByDate(
   }
 
   return map;
+}
+
+function sortAgendaDayTasks(a: AgendaDayTask, b: AgendaDayTask): number {
+  const byTime = (a.task.dueTime ?? "99:99").localeCompare(
+    b.task.dueTime ?? "99:99",
+  );
+  if (byTime !== 0) return byTime;
+  return a.task.updatedAt.localeCompare(b.task.updatedAt);
+}
+
+/** Real + virtual recurring tasks for the selected agenda day. */
+export function buildAgendaDayTasks(
+  events: Task[],
+  selectedDate: Date,
+): AgendaDayTask[] {
+  const dateKey = format(selectedDate, "yyyy-MM-dd");
+  const dayStart = startOfDay(selectedDate);
+  const result: AgendaDayTask[] = [];
+
+  for (const event of events) {
+    if (event.dueDate === dateKey) {
+      result.push({
+        key: event.id,
+        task: event,
+        isVirtualPreview: false,
+      });
+    }
+  }
+
+  for (const parent of events) {
+    if (parent.repeat === "none") continue;
+    if (parent.dueDate === dateKey) continue;
+
+    const virtualDates = getVirtualOccurrenceDatesInRange(
+      parent,
+      dayStart,
+      dayStart,
+    );
+    if (!virtualDates.includes(dateKey)) continue;
+
+    result.push({
+      key: `${parent.id}:${dateKey}`,
+      task: { ...parent, dueDate: dateKey },
+      isVirtualPreview: true,
+    });
+  }
+
+  return result.sort(sortAgendaDayTasks);
 }

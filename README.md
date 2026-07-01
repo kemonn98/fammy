@@ -18,7 +18,7 @@ Navigasi antar tab utama pakai **client shell** — pindah tab instan tanpa menu
 
 - Kalender menampilkan **titik indikator virtual** di tanggal mendatang sesuai pola repeat (harian / mingguan / bulanan / custom) — hanya preview UI, bukan baris terpisah di database
 - Di database, task induk **maju ke tanggal berikutnya** setelah waktu acara lewat (cron hourly)
-- Daftar agenda di bawah kalender hanya menampilkan task **real** di hari yang dipilih
+- Daftar agenda di bawah kalender menampilkan task **real**; tanggal berulang di masa depan tampil sebagai **Preview** (bisa dilihat, belum ada di database)
 
 ### Retensi data
 

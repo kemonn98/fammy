@@ -22,6 +22,7 @@ interface TaskItemProps {
   userEmail: string;
   onComplete?: (task: Task) => void;
   showDate?: boolean;
+  isVirtualPreview?: boolean;
 }
 
 export function TaskItem({
@@ -29,13 +30,14 @@ export function TaskItem({
   userEmail,
   onComplete,
   showDate = false,
+  isVirtualPreview = false,
 }: TaskItemProps) {
   const [detailOpen, setDetailOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const done = task.status === "done";
 
   async function handleComplete() {
-    if (!userEmail || done) return;
+    if (!userEmail || done || isVirtualPreview) return;
     if (onComplete) {
       await onComplete(task);
     } else {
@@ -44,26 +46,30 @@ export function TaskItem({
   }
 
   async function handleDelete() {
+    if (isVirtualPreview) return;
     await deleteTaskLocal(task);
   }
+
+  const readOnly = isVirtualPreview;
 
   return (
     <>
       <SwipeableTaskRow
         onSwipeLeft={handleDelete}
         onSwipeRight={handleComplete}
-        canSwipeRight={!done && !!userEmail}
-        canSwipeLeft={!!userEmail}
+        canSwipeRight={!done && !!userEmail && !readOnly}
+        canSwipeLeft={!!userEmail && !readOnly}
       >
         <div
           className={cn(
             "flex items-start gap-3 rounded-xl bg-card px-4 py-3.5 ring-1 ring-foreground/5 shadow-xs transition-opacity",
             done && "opacity-60",
+            readOnly && "opacity-80",
           )}
         >
           <Checkbox
             checked={done}
-            disabled={done || !userEmail}
+            disabled={done || !userEmail || readOnly}
             onCheckedChange={handleComplete}
             aria-label="Tandai selesai"
             className="mt-0.5 size-6 rounded-full"
@@ -100,9 +106,15 @@ export function TaskItem({
                 </span>
               )}
               {showDate && task.dueDate && <span>{task.dueDate}</span>}
+              {readOnly && (
+                <span className="rounded-full bg-muted px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide">
+                  Preview
+                </span>
+              )}
             </div>
           </button>
 
+          {!readOnly && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
@@ -133,6 +145,7 @@ export function TaskItem({
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+          )}
         </div>
       </SwipeableTaskRow>
 
@@ -140,14 +153,14 @@ export function TaskItem({
         task={task}
         open={detailOpen}
         onOpenChange={setDetailOpen}
-        canComplete={!done && !!userEmail}
+        canComplete={!done && !!userEmail && !readOnly}
         onComplete={handleComplete}
       />
 
       <EditTaskDialog
         key={`${task.id}-${task.updatedAt}`}
         task={task}
-        open={editOpen}
+        open={editOpen && !readOnly}
         onOpenChange={setEditOpen}
       />
     </>
