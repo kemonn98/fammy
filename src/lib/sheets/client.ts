@@ -140,6 +140,10 @@ export async function deleteTasks(ids: string[]): Promise<void> {
   await writeTab(TASK_TAB, rows);
 }
 
+export async function resetAllTasks(): Promise<void> {
+  await writeTab(TASK_TAB, getTaskHeaders());
+}
+
 export async function getAllPushSubscriptions(): Promise<
   PushSubscriptionRecord[]
 > {

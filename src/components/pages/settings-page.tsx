@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, BellRing, LogOut, Share } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { ArrowLeft, BellRing, LogOut, Share, Trash2 } from "lucide-react";
 import { signOut } from "next-auth/react";
 import {
   getPushStatus,
@@ -12,15 +13,25 @@ import {
   subscribeToPush,
   unsubscribeFromPush,
 } from "@/lib/push/client";
+import { clearLocalTaskData } from "@/lib/sync/engine";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 interface SettingsPageClientProps {
   userEmail: string;
 }
 
 export function SettingsPageClient({ userEmail }: SettingsPageClientProps) {
+  const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [toggling, setToggling] = useState(false);
   const [testing, setTesting] = useState(false);
@@ -30,6 +41,9 @@ export function SettingsPageClient({ userEmail }: SettingsPageClientProps) {
   );
   const [standalone, setStandalone] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [resetOpen, setResetOpen] = useState(false);
+  const [resetting, setResetting] = useState(false);
+  const [resetError, setResetError] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
     const status = await getPushStatus();
@@ -83,6 +97,36 @@ export function SettingsPageClient({ userEmail }: SettingsPageClientProps) {
     }
   }
 
+  async function handleResetTasks() {
+    setResetting(true);
+    setResetError(null);
+    try {
+      const res = await fetch("/api/tasks/reset", {
+        method: "POST",
+        credentials: "include",
+      });
+      if (!res.ok) {
+        const body = (await res.json().catch(() => null)) as {
+          error?: string;
+        } | null;
+        throw new Error(body?.error ?? "Gagal menghapus semua tugas.");
+      }
+      await clearLocalTaskData();
+      setResetOpen(false);
+      router.push("/today");
+      router.refresh();
+    } catch (error) {
+      console.error("Reset tasks failed:", error);
+      setResetError(
+        error instanceof Error
+          ? error.message
+          : "Gagal menghapus semua tugas.",
+      );
+    } finally {
+      setResetting(false);
+    }
+  }
+
   const pushHint = !pushSupported()
     ? "Browser ini tidak mendukung push notifikasi."
     : !standalone && isIos()
@@ -105,18 +149,9 @@ export function SettingsPageClient({ userEmail }: SettingsPageClientProps) {
         <h1 className="text-2xl font-semibold text-foreground">Pengaturan</h1>
       </header>
 
-      <section className="space-y-4 rounded-xl bg-card p-4 ring-1 ring-foreground/5">
+      <section className="space-y-2 rounded-xl bg-card p-4 ring-1 ring-foreground/5">
         <h2 className="text-sm font-medium text-foreground">Akun</h2>
         <p className="text-sm text-muted-foreground">{userEmail}</p>
-        <Button
-          type="button"
-          variant="outline"
-          className="w-full"
-          onClick={() => void signOut({ redirectTo: "/login" })}
-        >
-          <LogOut className="size-4" />
-          Keluar
-        </Button>
       </section>
 
       {isIos() && !standalone && (
@@ -177,6 +212,82 @@ export function SettingsPageClient({ userEmail }: SettingsPageClientProps) {
           <p className="text-xs text-muted-foreground">{message}</p>
         )}
       </section>
+
+      <section className="space-y-3 rounded-xl bg-card p-4 ring-1 ring-foreground/5">
+        <h2 className="text-sm font-medium text-foreground">Data</h2>
+        <p className="text-xs text-muted-foreground">
+          Hapus semua todo dan agenda dari database. Berlaku untuk kamu dan
+          pasangan.
+        </p>
+        <Button
+          type="button"
+          variant="outline"
+          className="w-full border-destructive/30 text-destructive hover:bg-destructive/10 hover:text-destructive"
+          onClick={() => {
+            setResetError(null);
+            setResetOpen(true);
+          }}
+        >
+          <Trash2 className="size-4" />
+          Hapus semua tugas
+        </Button>
+      </section>
+
+      <Dialog
+        open={resetOpen}
+        onOpenChange={(open) => {
+          if (!resetting) setResetOpen(open);
+        }}
+      >
+        <DialogContent showCloseButton={!resetting}>
+          <DialogHeader>
+            <DialogTitle>Hapus semua tugas?</DialogTitle>
+            <DialogDescription>
+              Semua todo dan agenda akan dihapus permanen dari database —
+              termasuk data pasangan. Tindakan ini{" "}
+              <span className="font-medium text-foreground">
+                tidak bisa dipulihkan
+              </span>{" "}
+              dan data akan hilang selamanya.
+            </DialogDescription>
+          </DialogHeader>
+
+          {resetError && (
+            <p className="text-sm text-destructive" role="alert">
+              {resetError}
+            </p>
+          )}
+
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              disabled={resetting}
+              onClick={() => setResetOpen(false)}
+            >
+              Batal
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              disabled={resetting}
+              onClick={() => void handleResetTasks()}
+            >
+              {resetting ? "Menghapus..." : "Ya, hapus selamanya"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Button
+        type="button"
+        variant="outline"
+        className="w-full"
+        onClick={() => void signOut({ redirectTo: "/login" })}
+      >
+        <LogOut className="size-4" />
+        Keluar
+      </Button>
     </div>
   );
 }

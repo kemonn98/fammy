@@ -6,6 +6,7 @@ import { id as idLocale } from "date-fns/locale";
 import type { Task } from "@/lib/types";
 import { completeTaskLocal } from "@/lib/sync/engine";
 import { canViewTask } from "@/lib/tasks/filters";
+import { buildAgendaEventsByDate } from "@/lib/recurring";
 import { useTasks } from "@/hooks/use-tasks";
 import { TaskItem } from "@/components/task-item";
 import { AddTaskForm } from "@/components/add-task-form";
@@ -26,6 +27,7 @@ export function AgendaPageClient({ userEmail }: AgendaPageClientProps) {
       tasks.filter(
         (t) =>
           !t.deleted &&
+          !t.recurrenceParentId &&
           t.type === "event" &&
           t.dueDate &&
           t.status !== "skipped" &&
@@ -34,16 +36,10 @@ export function AgendaPageClient({ userEmail }: AgendaPageClientProps) {
     [tasks, userEmail],
   );
 
-  const eventsByDate = useMemo(() => {
-    const map = new Map<string, Task[]>();
-    for (const event of events) {
-      if (!event.dueDate) continue;
-      const list = map.get(event.dueDate) ?? [];
-      list.push(event);
-      map.set(event.dueDate, list);
-    }
-    return map;
-  }, [events]);
+  const eventsByDate = useMemo(
+    () => buildAgendaEventsByDate(events, month),
+    [events, month],
+  );
 
   const dayEvents = useMemo(
     () =>

@@ -22,3 +22,13 @@ export function getDb(): FammyDB {
   if (!db) throw new Error("IndexedDB is only available in the browser");
   return db;
 }
+
+export async function recoverDb(): Promise<void> {
+  if (!db) return;
+  try {
+    db.close();
+  } catch {
+    // ignore close errors
+  }
+  await db.open();
+}

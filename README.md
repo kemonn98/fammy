@@ -5,13 +5,39 @@ PWA minimalis untuk todo & agenda pasangan. Bahasa Indonesia, offline-first, Goo
 ## Fitur
 
 - **Hari Ini** — todo hari ini dengan filter Shared / Personal (badge jumlah per tab)
-- **Agenda** — kalender event, visibility diatur saat buat agenda
+- **Agenda** — kalender event, visibility & pengulangan diatur saat buat agenda
 - **Semua** — semua task yang boleh kamu lihat (tanpa filter tab)
+- **Pengaturan** (ikon gear) — push notifikasi, tes notifikasi, reset data, keluar
 - Task **Shared** terlihat berdua; task **Personal** hanya terlihat pembuatnya
 - Offline-first (IndexedDB + sync queue), swipe selesai/hapus, tap task untuk detail
-- Web Push: ringkasan harian + pengingat event (iOS 16.4+, harus Add to Home Screen)
+- Sync tahan resume dari background (mutex, timeout jaringan, recovery IndexedDB)
 
 Navigasi antar tab utama pakai **client shell** — pindah tab instan tanpa menunggu server round-trip.
+
+### Agenda berulang
+
+- Kalender menampilkan **titik indikator virtual** di tanggal mendatang sesuai pola repeat (harian / mingguan / bulanan / custom) — hanya preview UI, bukan baris terpisah di database
+- Di database, task induk **maju ke tanggal berikutnya** setelah waktu acara lewat (cron hourly)
+- Daftar agenda di bawah kalender hanya menampilkan task **real** di hari yang dipilih
+
+### Retensi data
+
+- Todo selesai (>48 jam) dihapus otomatis dari Sheet (shared & personal)
+- Agenda/event tetap disimpan meskipun sudah selesai
+- **Hapus semua tugas** di Pengaturan → Data — reset permanen seluruh todo & agenda (kamu + pasangan), tidak bisa dipulihkan
+
+## Notifikasi (Web Push)
+
+Butuh iOS 16.4+ dan app di-install ke **Home Screen** (bukan tab Safari). Aktifkan lewat **Pengaturan** → toggle *Push notifikasi*.
+
+| Jenis | Kapan | Siapa dapat |
+|-------|-------|-------------|
+| Ringkasan harian | Jam `digestHour` (zona `APP_TIMEZONE`) | Semua yang subscribe |
+| Pengingat event | `remindBefore` menit sebelum `dueTime` (default 30 menit) | Subscriber yang berhak lihat event |
+| Task/event shared baru | Saat pasangan membuat task **Shared** | **Pasangan saja** (bukan pembuat) |
+| Task/event shared selesai | Saat pasangan menandai **Shared** selesai | **Pasangan saja** (bukan yang menyelesaikan) |
+
+Saat buat agenda, atur **Pengingat** di *More Details* (butuh jam acara agar push terkirim). Tes notifikasi instan tersedia di Pengaturan. Cek tab `push_subscriptions` di Sheet untuk memastikan device terdaftar.
 
 ## Stack
 
@@ -54,7 +80,7 @@ npm run generate:vapid
 | `GOOGLE_SHEET_ID` | ID dari URL Google Sheet |
 | `VAPID_*` | Web Push keys |
 | `CRON_SECRET` | Proteksi endpoint cron |
-| `APP_TIMEZONE` | Opsional, default `Asia/Jakarta` — zona waktu digest & reminder |
+| `APP_TIMEZONE` | Opsional, default `Asia/Jakarta` — zona waktu digest, reminder & recurring |
 
 ### 3. Init Sheet
 
@@ -85,9 +111,10 @@ Buka http://localhost:3000
 1. Buka Fammy di Safari
 2. Tap Share → **Tambah ke Layar Utama**
 3. Buka app dari icon Home Screen (bukan tab Safari)
-4. Tap **Aktifkan notifikasi**
+4. Tap ikon **gear** → aktifkan **Push notifikasi**
+5. Opsional: tap **Kirim** di *Tes notifikasi* untuk verifikasi
 
-Push tidak jalan di Safari biasa — hanya dari PWA yang sudah di-install. Cek tab `push_subscriptions` di Sheet untuk memastikan device terdaftar.
+Push tidak jalan di Safari biasa — hanya dari PWA yang sudah di-install. Jika notifikasi diblokir, buka iPhone **Settings → Fammy → Notifications**.
 
 ## Google Sheet
 
@@ -99,12 +126,20 @@ Push tidak jalan di Safari biasa — hanya dari PWA yang sudah di-install. Cek t
 | `push_subscriptions` | Device yang subscribe push |
 | `settings` | Konfigurasi app (`digestHour`, `digestMinute`, dll.) |
 
+### Kolom task (penting)
+
+| Kolom | Nilai |
+|-------|-------|
+| `type` | `todo` atau `event` |
+| `visibility` | `shared` atau `private` |
+| `repeat` | `none`, `daily`, `weekly`, `monthly`, `custom` |
+| `repeatInterval` | Hari (hanya untuk `custom`, mis. 14) |
+| `remindBefore` | Menit sebelum `dueTime` (event, default 30) |
+| `dueDate` / `dueTime` | `YYYY-MM-DD` / `HH:mm` |
+
 ### Manual edit
 
 - Jangan ubah kolom `id`
-- Format tanggal: `YYYY-MM-DD`, waktu: `HH:mm`
-- `visibility`: `shared` atau `private`
-- `type`: `todo` atau `event`
 - Hapus lewat app akan **menghapus baris** dari Sheet. Untuk edit manual, lebih aman set `deleted` ke `true` daripada menghapus baris.
 
 ### Settings (opsional)
@@ -118,17 +153,18 @@ Di tab `settings`, tambah baris:
 
 ## Cron Jobs
 
-Semua jadwal dihitung dalam zona `APP_TIMEZONE` (default WIB).
+Semua jadwal event/reminder/recurring dihitung dalam zona `APP_TIMEZONE` (default WIB).
 
 | Path | Schedule (UTC) | Fungsi |
 |------|----------------|--------|
 | `/api/cron/digest` | Setiap jam (`0 * * * *`) | Kirim ringkasan saat jam = `digestHour` |
 | `/api/cron/reminders` | Setiap menit | Pengingat event (`remindBefore` menit sebelum `dueTime`) |
-| `/api/cron/recurring` | 00:00 UTC harian | Generate instance task berulang |
+| `/api/cron/recurring` | Setiap jam (`0 * * * *`) | Majukan agenda berulang setelah waktu acara lewat |
+| `/api/cron/cleanup` | Setiap jam (`0 * * * *`) | Hapus todo selesai (>48 jam) dari Sheet |
 
 Vercel cron mengirim header `Authorization: Bearer $CRON_SECRET` — diverifikasi di setiap route.
 
-**Catatan:** Cron tiap menit butuh **Vercel Pro**. Log `200` tidak berarti push terkirim — cek response body (`notified`, `skipped`, dll.) dan pastikan ada subscription di Sheet.
+**Catatan:** Cron tiap menit butuh **Vercel Pro**. Log `200` tidak berarti push terkirim — cek response body (`notified`, `skipped`, dll.) dan pastikan ada subscription di Sheet. Notifikasi task shared (buat/selesai) dikirim langsung saat sync, bukan lewat cron.
 
 ## Scripts
 

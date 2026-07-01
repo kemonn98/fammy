@@ -4,12 +4,14 @@ import { format, parseISO } from "date-fns";
 import { id as idLocale } from "date-fns/locale";
 import {
   Calendar,
+  Bell,
   Check,
   Clock,
   Lock,
   Users,
 } from "lucide-react";
 import type { Task } from "@/lib/types";
+import { formatRemindBefore } from "@/lib/tasks/remind-before";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -100,6 +102,12 @@ export function TaskDetailDialog({
 
             {isEvent && task.dueTime && (
               <MetaItem icon={Clock}>{task.dueTime}</MetaItem>
+            )}
+
+            {isEvent && task.dueTime && task.remindBefore !== null && (
+              <MetaItem icon={Bell}>
+                {formatRemindBefore(task.remindBefore)}
+              </MetaItem>
             )}
 
             {isEvent && task.category && (

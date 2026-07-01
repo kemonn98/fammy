@@ -2,6 +2,21 @@ import type { LocalTask, PendingMutation, SyncResponse, Task } from "@/lib/types
 import { getDb } from "@/lib/db";
 import { advanceRecurringParent } from "@/lib/recurring";
 import { createId, nowIso } from "@/lib/utils";
+import { withDbRetry } from "@/lib/sync/db-timeout";
+import { fetchWithTimeout } from "@/lib/sync/fetch";
+
+let syncInFlight: Promise<void> | null = null;
+let syncQueued = false;
+let syncAbortController: AbortController | null = null;
+
+export function abortInFlightSync(): void {
+  syncAbortController?.abort();
+}
+
+export function resumeSync(): void {
+  abortInFlightSync();
+  void syncAll();
+}
 
 export async function enqueueMutation(
   action: PendingMutation["action"],
@@ -67,8 +82,11 @@ export async function mergeServerTasks(tasks: Task[]): Promise<void> {
   });
 }
 
-export async function pullFromServer(): Promise<Task[]> {
-  const res = await fetch("/api/tasks", { credentials: "include" });
+export async function pullFromServer(signal?: AbortSignal): Promise<Task[]> {
+  const res = await fetchWithTimeout(
+    "/api/tasks",
+    { credentials: "include", signal },
+  );
   if (!res.ok) throw new Error("Gagal memuat data");
   const tasks: Task[] = await res.json();
   await mergeServerTasks(tasks);
@@ -76,16 +94,19 @@ export async function pullFromServer(): Promise<Task[]> {
   return tasks;
 }
 
-export async function pushToServer(): Promise<SyncResponse | null> {
+export async function pushToServer(
+  signal?: AbortSignal,
+): Promise<SyncResponse | null> {
   const database = getDb();
   const mutations = await database.pendingMutations.toArray();
   if (mutations.length === 0) return null;
 
-  const res = await fetch("/api/sync", {
+  const res = await fetchWithTimeout("/api/sync", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "include",
     body: JSON.stringify({ mutations }),
+    signal,
   });
 
   if (!res.ok) throw new Error("Gagal sinkronisasi");
@@ -120,33 +141,67 @@ export async function pushToServer(): Promise<SyncResponse | null> {
   return result;
 }
 
+async function runSync(): Promise<void> {
+  do {
+    syncQueued = false;
+    syncAbortController = new AbortController();
+    const signal = syncAbortController.signal;
+
+    try {
+      await pushToServer(signal);
+      if (!signal.aborted) {
+        await pullFromServer(signal);
+      }
+    } catch (error) {
+      if (signal.aborted) {
+        console.warn("Sync aborted");
+      } else {
+        console.error("Sync error:", error);
+      }
+    } finally {
+      syncAbortController = null;
+    }
+  } while (syncQueued && navigator.onLine);
+}
+
 export async function syncAll(): Promise<void> {
   if (!navigator.onLine) return;
-  try {
-    await pushToServer();
-    await pullFromServer();
-  } catch (error) {
-    console.error("Sync error:", error);
+
+  if (syncInFlight) {
+    syncQueued = true;
+    return syncInFlight;
   }
+
+  syncInFlight = runSync().finally(() => {
+    syncInFlight = null;
+  });
+
+  return syncInFlight;
 }
 
 export async function createTaskLocal(task: Task): Promise<void> {
-  await saveTaskLocally(task, "pending");
-  await enqueueMutation("create", task);
+  await withDbRetry(async () => {
+    await saveTaskLocally(task, "pending");
+    await enqueueMutation("create", task);
+  });
   void syncAll();
 }
 
 export async function updateTaskLocal(task: Task): Promise<void> {
   const updated = { ...task, updatedAt: nowIso() };
-  await saveTaskLocally(updated, "pending");
-  await enqueueMutation("update", updated);
+  await withDbRetry(async () => {
+    await saveTaskLocally(updated, "pending");
+    await enqueueMutation("update", updated);
+  });
   void syncAll();
 }
 
 export async function deleteTaskLocal(task: Task): Promise<void> {
-  await enqueueMutation("delete", {
-    ...task,
-    updatedAt: nowIso(),
+  await withDbRetry(async () => {
+    await enqueueMutation("delete", {
+      ...task,
+      updatedAt: nowIso(),
+    });
   });
   void syncAll();
 }
@@ -192,4 +247,12 @@ export async function resolveConflictsByPull(): Promise<void> {
     await database.tasks.put({ ...task, syncStatus: "synced" });
     await database.pendingMutations.where("id").equals(task.id).delete();
   }
+}
+
+export async function clearLocalTaskData(): Promise<void> {
+  abortInFlightSync();
+  const database = getDb();
+  await database.tasks.clear();
+  await database.pendingMutations.clear();
+  await database.meta.bulkDelete(["lastPullAt", "lastPushAt"]);
 }

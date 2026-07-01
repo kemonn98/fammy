@@ -7,6 +7,10 @@ import { format, parse } from "date-fns";
 import { id as idLocale } from "date-fns/locale";
 import type { Task, TaskType, Visibility } from "@/lib/types";
 import { CATEGORIES } from "@/lib/tasks/filters";
+import {
+  DEFAULT_REMIND_BEFORE_MINUTES,
+  REMIND_BEFORE_OPTIONS,
+} from "@/lib/tasks/remind-before";
 import { createTaskLocal } from "@/lib/sync/engine";
 import { cn, createId, nowIso } from "@/lib/utils";
 import { useCapitalizedInput } from "@/hooks/use-capitalized-input";
@@ -60,8 +64,10 @@ export function AddTaskForm({
   const [dateOpen, setDateOpen] = useState(false);
   const [dueTime, setDueTime] = useState("");
   const [repeat, setRepeat] = useState<Task["repeat"]>("none");
+  const [remindBefore, setRemindBefore] = useState(DEFAULT_REMIND_BEFORE_MINUTES);
   const [eventVisibility, setEventVisibility] = useState<Visibility>(visibility);
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   const dueDateObj = dueDate
     ? parse(dueDate, "yyyy-MM-dd", new Date())
@@ -75,14 +81,17 @@ export function AddTaskForm({
     setDueDate(defaultDate);
     setDueTime("");
     setRepeat("none");
+    setRemindBefore(DEFAULT_REMIND_BEFORE_MINUTES);
     setEventVisibility(visibility);
   }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!title.trim()) return;
+    if (!title.trim() || saving) return;
 
     setSaving(true);
+    setSaveError(null);
+
     const resolvedVisibility: Visibility = isEvent ? eventVisibility : visibility;
     const task: Task = {
       id: createId(),
@@ -102,21 +111,27 @@ export function AddTaskForm({
       status: "active",
       completedAt: null,
       completedBy: null,
-      remindBefore: isEvent ? 30 : null,
+      remindBefore: isEvent ? remindBefore : null,
       updatedAt: nowIso(),
       deleted: false,
       recurrenceParentId: null,
       lastNotifiedAt: null,
     };
 
-    await createTaskLocal(task);
-    setSaving(false);
+    try {
+      await createTaskLocal(task);
 
-    if (onSaved) {
-      reset();
-      onSaved();
-    } else {
-      router.push("/today");
+      if (onSaved) {
+        reset();
+        onSaved();
+      } else {
+        router.push("/today");
+      }
+    } catch (error) {
+      console.error("Failed to save task:", error);
+      setSaveError("Gagal menyimpan. Coba lagi.");
+    } finally {
+      setSaving(false);
     }
   }
 
@@ -124,6 +139,11 @@ export function AddTaskForm({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-2">
+      {saveError && (
+        <p className="px-1 text-sm text-destructive" role="alert">
+          {saveError}
+        </p>
+      )}
       <div className="flex items-start gap-3 rounded-xl bg-card px-4 py-3.5 ring-1 ring-foreground/5 shadow-xs">
         <span
           aria-hidden
@@ -174,6 +194,33 @@ export function AddTaskForm({
               <div className="space-y-2">
                 <Label>Jam</Label>
                 <TimeSelect value={dueTime} onValueChange={setDueTime} />
+              </div>
+
+              <div className="space-y-2">
+                <Label>Pengingat</Label>
+                <Select
+                  value={String(remindBefore)}
+                  onValueChange={(v) => setRemindBefore(Number(v))}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {REMIND_BEFORE_OPTIONS.map((option) => (
+                      <SelectItem
+                        key={option.value}
+                        value={String(option.value)}
+                      >
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  {dueTime
+                    ? "Notifikasi push dikirim sebelum waktu acara."
+                    : "Isi jam acara agar pengingat bisa dikirim."}
+                </p>
               </div>
 
               <div className="space-y-2">
