@@ -16,7 +16,7 @@ Versi aktif aplikasi: **`1.9.0`** (`src/lib/version.ts`)
 
 ## [1.9.0] — 2026-07-01
 
-**MINOR** — English UI
+**MINOR** — [`3ac80f9`](https://github.com/kemonn98/fammy/commit/3ac80f9)
 
 - Translate all user-facing copy from Indonesian to English (nav, forms, dialogs, settings, login, errors, push)
 - Switch `date-fns` locale to `enUS`; set `lang="en"` on root HTML
