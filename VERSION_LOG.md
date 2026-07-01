@@ -10,13 +10,22 @@ Format: **MAJOR.MINOR.PATCH**
 | **MINOR** | Fitur baru |
 | **PATCH** | Perbaikan bug, polish UI, penyesuaian kecil |
 
-Versi aktif aplikasi: **`1.8.0`** (`src/lib/version.ts`)
+Versi aktif aplikasi: **`1.8.1`** (`src/lib/version.ts`)
+
+---
+
+## [1.8.1] — 2026-07-01
+
+**PATCH** — dokumentasi agent
+
+- `AGENTS.md` — cheat sheet arsitektur Fammy (sync, push, recurring, UX, cron)
+- Workflow wajib saat prompt `git push`: bump versi → VERSION_LOG → README → commit → push
 
 ---
 
 ## [1.8.0] — 2026-07-01
 
-**UI cleanup**
+**UI cleanup** — [`6b21c93`](https://github.com/kemonn98/fammy/commit/6b21c93)
 
 - Hapus judul halaman Hari Ini, Agenda, dan Semua (navigasi bawah tetap)
 - Grup Semua: "Tanpa tanggal" → **To Do**, "Mendatang" → **Agenda**

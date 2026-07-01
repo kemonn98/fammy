@@ -2,7 +2,7 @@
 
 PWA minimalis untuk todo & agenda pasangan. Bahasa Indonesia, offline-first, Google Sheets sebagai database.
 
-**Versi saat ini:** `1.8.0` (badge di header app) — riwayat lengkap di [VERSION_LOG.md](./VERSION_LOG.md).
+**Versi saat ini:** `1.8.1` (badge di header app) — riwayat lengkap di [VERSION_LOG.md](./VERSION_LOG.md).
 
 ## Fitur
 
@@ -174,6 +174,7 @@ Vercel cron mengirim header `Authorization: Bearer $CRON_SECRET` — diverifikas
 |------|--------|
 | [`VERSION_LOG.md`](./VERSION_LOG.md) | Changelog per release + link commit GitHub |
 | [`src/lib/version.ts`](./src/lib/version.ts) | Nomor versi aktif (`APP_VERSION`) — ditampilkan di header |
+| [`AGENTS.md`](./AGENTS.md) | Cheat sheet AI agent + workflow `git push` |
 
 Skema **MAJOR.MINOR.PATCH**: major = perubahan besar; minor = fitur baru; patch = bugfix / polish UI.
 
