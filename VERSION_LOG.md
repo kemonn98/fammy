@@ -16,7 +16,7 @@ Versi aktif aplikasi: **`1.8.1`** (`src/lib/version.ts`)
 
 ## [1.8.1] — 2026-07-01
 
-**PATCH** — dokumentasi agent
+**PATCH** — [`5085b76`](https://github.com/kemonn98/fammy/commit/5085b76)
 
 - `AGENTS.md` — cheat sheet arsitektur Fammy (sync, push, recurring, UX, cron)
 - Workflow wajib saat prompt `git push`: bump versi → VERSION_LOG → README → commit → push
