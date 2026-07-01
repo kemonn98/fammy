@@ -46,10 +46,10 @@ export function isEventTodayOrTomorrow(task: Task): boolean {
 
 export function groupTasksByDate(tasks: Task[]): Record<string, Task[]> {
   const groups: Record<string, Task[]> = {
-    "Tanpa tanggal": [],
+    "To Do": [],
     "Hari ini": [],
     Besok: [],
-    Mendatang: [],
+    Agenda: [],
     Selesai: [],
   };
 
@@ -62,7 +62,7 @@ export function groupTasksByDate(tasks: Task[]): Record<string, Task[]> {
     }
 
     if (!task.dueDate) {
-      groups["Tanpa tanggal"].push(task);
+      groups["To Do"].push(task);
       continue;
     }
 
@@ -73,12 +73,12 @@ export function groupTasksByDate(tasks: Task[]): Record<string, Task[]> {
       } else if (isTomorrow(date)) {
         groups["Besok"].push(task);
       } else if (date >= today) {
-        groups["Mendatang"].push(task);
+        groups["Agenda"].push(task);
       } else {
         groups["Hari ini"].push(task);
       }
     } catch {
-      groups["Tanpa tanggal"].push(task);
+      groups["To Do"].push(task);
     }
   }
 

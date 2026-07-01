@@ -13,38 +13,6 @@ function pathToTab(pathname: string): BottomNavHref | null {
   return TAB_PATHS.find((path) => pathname === path) ?? null;
 }
 
-function TodayHeader() {
-  return (
-    <header className="mb-5">
-      <h1 className="text-2xl font-semibold text-foreground">Hari Ini</h1>
-      <p className="text-sm text-muted-foreground">
-        {new Date().toLocaleDateString("id-ID", {
-          weekday: "long",
-          day: "numeric",
-          month: "long",
-        })}
-      </p>
-    </header>
-  );
-}
-
-function AgendaHeader() {
-  return (
-    <header className="mb-5">
-      <h1 className="text-2xl font-semibold text-foreground">Agenda</h1>
-      <p className="text-sm text-muted-foreground">Jadwal & acara bersama</p>
-    </header>
-  );
-}
-
-function AllHeader() {
-  return (
-    <header className="mb-6">
-      <h1 className="text-2xl font-semibold text-foreground">Semua</h1>
-    </header>
-  );
-}
-
 interface AppShellProps {
   children: React.ReactNode;
   userEmail: string;
@@ -85,17 +53,14 @@ export function AppShell({ children, userEmail }: AppShellProps) {
   return (
     <>
       <div className={activeTab === "/today" ? "block" : "hidden"}>
-        <TodayHeader />
         <TodayPageClient userEmail={userEmail} />
       </div>
 
       <div className={activeTab === "/agenda" ? "block" : "hidden"}>
-        <AgendaHeader />
         <AgendaPageClient userEmail={userEmail} />
       </div>
 
       <div className={activeTab === "/all" ? "block" : "hidden"}>
-        <AllHeader />
         <AllPageClient userEmail={userEmail} />
       </div>
 

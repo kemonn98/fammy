@@ -2,23 +2,25 @@
 
 PWA minimalis untuk todo & agenda pasangan. Bahasa Indonesia, offline-first, Google Sheets sebagai database.
 
+**Versi saat ini:** `1.8.0` (badge di header app) — riwayat lengkap di [VERSION_LOG.md](./VERSION_LOG.md).
+
 ## Fitur
 
-- **Hari Ini** — todo hari ini dengan filter Shared / Personal (badge jumlah per tab)
-- **Agenda** — kalender event, visibility & pengulangan diatur saat buat agenda
-- **Semua** — semua task yang boleh kamu lihat (tanpa filter tab)
+- **Hari Ini** — todo dengan filter Shared / Personal (badge jumlah per tab) + form tambah tugas
+- **Agenda** — kalender event, visibility, pengulangan & pengingat diatur saat buat agenda
+- **Semua** — semua task yang boleh kamu lihat, dikelompokkan: **To Do**, Hari ini, Besok, **Agenda**, Selesai
 - **Pengaturan** (ikon gear) — push notifikasi, tes notifikasi, reset data, keluar
 - Task **Shared** terlihat berdua; task **Personal** hanya terlihat pembuatnya
 - Offline-first (IndexedDB + sync queue), swipe selesai/hapus, tap task untuk detail
 - Sync tahan resume dari background (mutex, timeout jaringan, recovery IndexedDB)
 
-Navigasi antar tab utama pakai **client shell** — pindah tab instan tanpa menunggu server round-trip.
+Navigasi antar tab lewat **bottom nav** + **client shell** — pindah tab instan tanpa server round-trip. UI tanpa judul halaman besar; nama tab cukup di navigasi bawah.
 
 ### Agenda berulang
 
-- Kalender menampilkan **titik indikator virtual** di tanggal mendatang sesuai pola repeat (harian / mingguan / bulanan / custom) — hanya preview UI, bukan baris terpisah di database
+- Kalender menampilkan **titik indikator virtual** di tanggal mendatang sesuai pola repeat (harian / mingguan / bulanan / custom) — preview UI, bukan baris terpisah di database
 - Di database, task induk **maju ke tanggal berikutnya** setelah waktu acara lewat (cron hourly)
-- Daftar agenda di bawah kalender menampilkan task **real**; tanggal berulang di masa depan tampil sebagai **Preview** (bisa dilihat, belum ada di database)
+- Daftar agenda di bawah kalender: task **real** + occurrence mendatang sebagai **Preview** (read-only, belum di database)
 
 ### Retensi data
 
@@ -165,6 +167,17 @@ Semua jadwal event/reminder/recurring dihitung dalam zona `APP_TIMEZONE` (defaul
 Vercel cron mengirim header `Authorization: Bearer $CRON_SECRET` — diverifikasi di setiap route.
 
 **Catatan:** Cron tiap menit butuh **Vercel Pro**. Log `200` tidak berarti push terkirim — cek response body (`notified`, `skipped`, dll.) dan pastikan ada subscription di Sheet. Notifikasi task shared (buat/selesai) dikirim langsung saat sync, bukan lewat cron.
+
+## Versioning
+
+| File | Peran |
+|------|--------|
+| [`VERSION_LOG.md`](./VERSION_LOG.md) | Changelog per release + link commit GitHub |
+| [`src/lib/version.ts`](./src/lib/version.ts) | Nomor versi aktif (`APP_VERSION`) — ditampilkan di header |
+
+Skema **MAJOR.MINOR.PATCH**: major = perubahan besar; minor = fitur baru; patch = bugfix / polish UI.
+
+Setelah rilis baru: update `APP_VERSION`, tambah entri di `VERSION_LOG.md`, commit & push.
 
 ## Scripts
 
