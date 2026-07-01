@@ -16,7 +16,7 @@ Versi aktif aplikasi: **`1.9.1`** (`src/lib/version.ts`)
 
 ## [1.9.1] — 2026-07-02
 
-**PATCH** — App icon from `fammy-profile.png`
+**PATCH** — [`9fcb510`](https://github.com/kemonn98/fammy/commit/9fcb510)
 
 - Generate PWA icons (192, 512, apple-touch, favicon) from `public/fammy-profile.png` via `sharp` in build script
 - Show logo in app header and login page; update manifest theme/background colors to match
